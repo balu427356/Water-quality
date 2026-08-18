@@ -1,10 +1,12 @@
 {
   "seeds": [
-    42
+    7,
+    42,
+    2024
   ],
   "best_model": "Ensemble-stack",
-  "best_test_accuracy": 0.856,
-  "best_test_accuracy_sd": 0.0,
+  "best_test_accuracy": 0.8606666666666666,
+  "best_test_accuracy_sd": 0.013613718571108114,
   "ceiling": {
     "p_clean": 0.801625,
     "ceiling_clean": 0.9017620458443786,
