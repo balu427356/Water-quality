@@ -1156,6 +1156,19 @@ def err_by_stratum(Xdev, Xte, yte, score, thr):
     print("  " + by.round(4).to_dict().__repr__())
 
 
+# Vector output carries a creation timestamp by default, which makes an
+# otherwise identical rerun produce a different file. Suppressing it keeps the
+# committed figures byte-reproducible.
+PDF_META = {"CreationDate": None}
+
+
+def savefig(fig, out, name):
+    for ext in ("png", "pdf"):
+        kw = {"metadata": PDF_META} if ext == "pdf" else {}
+        fig.savefig(out / "figures" / f"{name}.{ext}", **kw)
+    plt.close(fig)
+
+
 def journal_style():
     plt.rcParams.update({
         "figure.dpi": 120, "savefig.dpi": 600, "savefig.bbox": "tight",
@@ -1235,9 +1248,7 @@ def fig_contamination(Xdev, ydev, det, feats, out):
     a.set_xlabel("tail cells per row")
     a.set_ylabel("CV accuracy")
     a.set_title("accuracy collapses off the core")
-    for ext in ("png", "pdf"):
-        fig.savefig(out / "figures" / f"fig1_contamination.{ext}")
-    plt.close(fig)
+    savefig(fig, out, "fig1_contamination")
 
 
 def fig_ceiling(info, summary, out):
@@ -1270,9 +1281,7 @@ def fig_ceiling(info, summary, out):
     a.set_xlabel("test accuracy (mean over seeds)")
     a.tick_params(axis="y", labelsize=6)
     a.set_title("every model saturates at the ceiling")
-    for ext in ("png", "pdf"):
-        fig.savefig(out / "figures" / f"fig2_ceiling.{ext}")
-    plt.close(fig)
+    savefig(fig, out, "fig2_ceiling")
 
 
 def fig_quantum(rec, out):
@@ -1312,9 +1321,7 @@ def fig_quantum(rec, out):
     a2.set_ylabel("kernel effective rank", color=PAL["c0"])
     a2.grid(False)
     a.set_title("kernel geometry")
-    for ext in ("png", "pdf"):
-        fig.savefig(out / "figures" / f"fig3_quantum.{ext}")
-    plt.close(fig)
+    savefig(fig, out, "fig3_quantum")
 
 
 def fig_final(yte, score, thr, out):
@@ -1348,9 +1355,7 @@ def fig_final(yte, score, thr, out):
     a.set_ylabel("precision")
     a.legend(loc="lower left")
     a.set_title("precision-recall")
-    for ext in ("png", "pdf"):
-        fig.savefig(out / "figures" / f"fig4_final.{ext}")
-    plt.close(fig)
+    savefig(fig, out, "fig4_final")
 
 
 # ═══════════════════════════════════════════════════════════════════════════ #
