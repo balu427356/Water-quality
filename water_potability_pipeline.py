@@ -227,6 +227,56 @@ def feature_names(feats, mode):
 # ═══════════════════════════════════════════════════════════════════════════ #
 # REGIME-AWARE ROUTER
 # ═══════════════════════════════════════════════════════════════════════════ #
+class QuantileScored(BaseEstimator, ClassifierMixin):
+    """Gives an estimator without `predict_proba` a score in [0, 1].
+
+    The score is the quantile of the decision function within the *training*
+    distribution. Rank-normalising against the evaluation set instead would be
+    transductive: one row's score would depend on the other rows scored
+    alongside it, and because the test split is exactly balanced, thresholding
+    such a score quietly exploits knowledge of the test label distribution.
+    Referencing the training distribution keeps the mapping inductive and fixed
+    at fit time.
+    """
+
+    def __init__(self, est=None):
+        self.est = est
+
+    def fit(self, X, y):
+        self.est_ = clone(self.est).fit(X, y)
+        self.classes_ = getattr(self.est_, "classes_", np.unique(y))
+        self.ref_ = np.sort(self.est_.decision_function(X))
+        return self
+
+    def decision_function(self, X):
+        return self.est_.decision_function(X)
+
+    def predict(self, X):
+        return self.est_.predict(X)
+
+    def predict_proba(self, X):
+        d = self.est_.decision_function(X)
+        q = np.searchsorted(self.ref_, d, side="right") / max(len(self.ref_), 1)
+        return np.column_stack([1.0 - q, q])
+
+
+class OOFQuantileMap:
+    """Maps a score to its quantile in the out-of-fold score distribution.
+
+    Fitted on development-partition out-of-fold scores and then applied
+    unchanged to the test partition, so rank averaging in the ensemble stays
+    inductive.
+    """
+
+    def fit(self, s):
+        self.ref_ = np.sort(np.asarray(s, float))
+        return self
+
+    def transform(self, s):
+        return (np.searchsorted(self.ref_, np.asarray(s, float), side="right")
+                / max(len(self.ref_), 1))
+
+
 class RegimeRouter(BaseEstimator, ClassifierMixin):
     """Fits one specialist per stratum and routes each row to its own.
 
@@ -728,11 +778,7 @@ def tune_classical(Xdev, ydev, feats, mode, seed, trials, out, verbose=True):
         for (tr, va), (A, B) in zip(folds, cache[m]):
             f = make().fit(A, ydev[tr])
             pred[va] = f.predict(B)
-            if hasattr(f, "predict_proba"):
-                oof[va] = f.predict_proba(B)[:, 1]
-            else:
-                d = f.decision_function(B)
-                oof[va] = stats.rankdata(d) / len(d)
+            oof[va] = f.predict_proba(B)[:, 1]
         return (pred == ydev).mean(), oof
 
     spaces = {}
@@ -750,11 +796,11 @@ def tune_classical(Xdev, ydev, feats, mode, seed, trials, out, verbose=True):
     # Platt scaling is deliberately off: it costs an internal 5-fold refit per
     # candidate and buys nothing here, since the decision threshold is tuned on
     # out-of-fold scores downstream anyway.
-    spaces["RBF-SVM"] = (lambda t: make_pipeline(
+    spaces["RBF-SVM"] = (lambda t: QuantileScored(make_pipeline(
         robust_scaler(seed),
         SVC(C=t.suggest_float("C", 1e-2, 1e3, log=True),
             gamma=t.suggest_float("gamma", 1e-4, 1e1, log=True),
-            cache_size=500, random_state=seed)), mode)
+            cache_size=500, random_state=seed))), mode)
 
     spaces["RandomForest"] = (lambda t: RandomForestClassifier(
         n_estimators=t.suggest_int("n_estimators", 300, 1200, step=100),
@@ -891,7 +937,10 @@ def build_ensembles(oof_store, ydev, top_k=6):
 
     ens = {}
     ens["Ensemble-mean"] = P.mean(axis=1)
-    R = np.column_stack([stats.rankdata(P[:, j]) / len(P) for j in range(P.shape[1])])
+    # The quantile map is fitted here on out-of-fold scores and reused verbatim
+    # on the test partition, so no test row's score depends on its neighbours.
+    mappers = [OOFQuantileMap().fit(P[:, j]) for j in range(P.shape[1])]
+    R = np.column_stack([mappers[j].transform(P[:, j]) for j in range(P.shape[1])])
     ens["Ensemble-rank"] = R.mean(axis=1)
 
     def negacc(w):
@@ -920,7 +969,7 @@ def build_ensembles(oof_store, ydev, top_k=6):
 
     for k, v in ens.items():
         print(f"  {k:20s} OOF acc {(((v >= .5).astype(int)) == ydev).mean():.4f}")
-    return ens, names, w
+    return ens, names, w, mappers
 
 
 # ═══════════════════════════════════════════════════════════════════════════ #
@@ -1355,7 +1404,7 @@ def main():
         results, oof_store, params, folds, cache = tune_classical(
             Xdev, ydev, feats, mode, seed, args.trials, out, verbose=first or True)
 
-        ens, members, weights = build_ensembles(oof_store, ydev)
+        ens, members, weights, mappers = build_ensembles(oof_store, ydev)
         oof_store.update(ens)
 
         banner("STAGE 8 | DECISION THRESHOLD (out-of-fold predictions only)")
@@ -1391,8 +1440,8 @@ def main():
                 robust_scaler(seed), PolynomialFeatures(2, include_bias=False),
                 LogisticRegression(max_iter=30000, random_state=seed,
                                    **params["Logistic-poly2"])), "raw"),
-            "RBF-SVM": (make_pipeline(robust_scaler(seed), SVC(
-                cache_size=500, random_state=seed, **params["RBF-SVM"])), mode),
+            "RBF-SVM": (QuantileScored(make_pipeline(robust_scaler(seed), SVC(
+                cache_size=500, random_state=seed, **params["RBF-SVM"]))), mode),
             "RandomForest": (RandomForestClassifier(random_state=seed, n_jobs=-1,
                                                     **params["RandomForest"]), mode),
             "ExtraTrees": (ExtraTreesClassifier(random_state=seed, n_jobs=-1,
@@ -1424,13 +1473,9 @@ def main():
             Atr = Adev if m == mode else Adev_raw
             Ats = Ate if m == mode else Ate_raw
             fitted = clone(est).fit(Atr, ydev)
-            # Mirror the scoring convention used when the threshold was chosen,
-            # otherwise the frozen threshold would be applied to a different scale.
-            if hasattr(fitted, "predict_proba"):
-                s = fitted.predict_proba(Ats)[:, 1]
-            else:
-                d = fitted.decision_function(Ats)
-                s = stats.rankdata(d) / len(d)
+            # Same scoring convention used when the threshold was chosen, so the
+            # frozen threshold is applied to the scale it was selected on.
+            s = fitted.predict_proba(Ats)[:, 1]
             fitted_scores[name] = s
             thr = thresholds.get(name, 0.5)
             r = evaluate(yte, (s >= thr).astype(int), s)
@@ -1453,7 +1498,7 @@ def main():
         Pte = np.column_stack([fitted_scores[n] for n in members])
         ens_te = {"Ensemble-mean": Pte.mean(axis=1),
                   "Ensemble-rank": np.column_stack(
-                      [stats.rankdata(Pte[:, j]) / len(Pte) for j in range(Pte.shape[1])]
+                      [mappers[j].transform(Pte[:, j]) for j in range(Pte.shape[1])]
                   ).mean(axis=1),
                   "Ensemble-weighted": Pte @ weights}
         Poof = np.column_stack([oof_store[n] for n in members])
