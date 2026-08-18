@@ -1,0 +1,9 @@
+representation,model,cv_accuracy,n_features
+domain,Logistic+poly2,0.8465,18
+domain,HistGB,0.8455,18
+regime,Logistic+poly2,0.84325,19
+regime+domain,HistGB,0.842625,28
+raw,HistGB,0.841875,9
+regime,HistGB,0.840875,19
+regime+domain,Logistic+poly2,0.84025,28
+raw,Logistic+poly2,0.83825,9
