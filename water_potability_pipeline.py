@@ -1523,9 +1523,14 @@ def main():
                              **evaluate(yte, qpred, qscore)))
 
         cur = pd.DataFrame(all_rows)
+        # Written after every seed rather than only at the end, so a run that is
+        # interrupted still leaves usable results for the seeds it finished.
+        cur.to_csv(out / "tables" / "raw_results.csv", index=False)
         cur = cur[cur.seed == seed].sort_values("accuracy", ascending=False)
         print(cur[["model", "cv_accuracy", "accuracy", "roc_auc", "f1", "mcc"]
                   ].round(4).to_string(index=False))
+        print(f"[seed {seed} complete; raw_results.csv now covers "
+              f"{pd.DataFrame(all_rows).seed.nunique()} seed(s)]", flush=True)
 
         if first:
             # QSVM is scored through its own path and has no entry in
