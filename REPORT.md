@@ -11,8 +11,12 @@
 | **new best, full coverage** (Ensemble-stack) | **0.8607 ± 0.0136** |
 | **selective, 80.3% coverage** | **0.9036 ± 0.0143** |
 | QSVM (best of 4 feature maps) | 0.8335 ± 0.0015 |
+| VQC (best of 72 configurations) | 0.8232 ± 0.0129 |
 | 90% on the full test set | **not achievable** |
 | 97% on the full test set | **not achievable** |
+
+Two quantum architectures were benchmarked — a quantum kernel method (QSVM) and a
+variationally trained circuit (VQC). Both finish below every classical model.
 
 ---
 
@@ -143,7 +147,9 @@ different generator, not a harder version of the same one.
 
 | file | purpose |
 |---|---|
-| `water_potability_pipeline.py` | forensics, ceiling analysis, representation search, classical arm, quantum arm, ensembles, threshold, multi-seed evaluation |
+| `water_potability_pipeline.py` | forensics, ceiling analysis, representation search, classical arm, QSVM arm, ensembles, threshold, multi-seed evaluation |
+| `vqc.py` | variational quantum classifier — statevector simulator, ansatz, training, self-tests |
+| `vqc_arm.py` | VQC hyperparameter search, matched controls, test evaluation |
 | `selective.py` | selective classification and risk–coverage analysis |
 | `finalize.py` | summary, statistics and figures from `raw_results.csv` |
 | `leakage_audit.py` | executable leakage checks; exits non-zero on failure |
@@ -178,6 +184,7 @@ test figures come from refits on all 8,000.
 | kNN | 0.8306 | 0.8362 ± 0.0038 | 0.8362 ± 0.0038 | 0.8518 ± 0.0039 | 0.8140 ± 0.0092 | 0.8324 ± 0.0046 | 0.9180 ± 0.0053 | 0.6730 ± 0.0073 |
 | **QSVM** | 0.8393 | **0.8335 ± 0.0015** | 0.8335 ± 0.0015 | 0.8538 ± 0.0071 | 0.8050 ± 0.0105 | 0.8286 ± 0.0027 | 0.9198 ± 0.0028 | 0.6682 ± 0.0028 |
 | LogisticRegression | 0.8225 | 0.8267 ± 0.0117 | 0.8267 ± 0.0117 | 0.8313 ± 0.0068 | 0.8197 ± 0.0215 | 0.8254 ± 0.0135 | 0.8551 ± 0.0038 | 0.6535 ± 0.0231 |
+| **VQC** | 0.8218 | **0.8232 ± 0.0129** | 0.8232 ± 0.0129 | 0.8325 ± 0.0256 | 0.8100 ± 0.0050 | 0.8209 ± 0.0099 | 0.8982 ± 0.0117 | 0.6469 ± 0.0265 |
 
 **Against the original results.** Same three seeds, so the comparison is paired:
 
@@ -190,14 +197,25 @@ test figures come from refits on all 8,000.
 | QSVM | 0.8308 | 0.8335 | +0.0027 |
 | best overall | 0.8457 | **0.8607** | **+0.0150** |
 
-**Statistics.** Friedman over 16 models × 3 seeds. Mean ranks (lower better):
-Ensemble-stack 2.83, ExtraTrees 3.17, Ensemble-rank 3.50, … kNN 15.00,
-**QSVM 15.67**, LogisticRegression 16.67. Nadeau–Bengio corrected paired t-tests
-against Ensemble-stack: only LogisticRegression separates at p < 0.05
-(Δ = 0.0340, p = 0.019); QSVM gives Δ = 0.0272, t = 2.66, **p = 0.117**. With
-three seeds the test is underpowered — the direction is consistent across every
-seed but the corrected test does not reach significance, and that is stated as
-measured rather than overclaimed.
+**Statistics.** Friedman over 18 models × 3 seeds: χ² = 43.83, **p = 3.6 × 10⁻⁴**.
+Mean ranks (lower better): Ensemble-rank 2.33, ExtraTrees 2.67, Ensemble-stack
+2.83, … kNN 15.00, **QSVM 16.00**, LogisticRegression 16.83, **VQC 17.50**. The
+two quantum models occupy the bottom of the ranking, with VQC last of eighteen.
+
+Nadeau–Bengio corrected paired t-tests against Ensemble-stack:
+
+| model | Δ accuracy | t | p |
+|---|---|---|---|
+| **VQC** | 0.0375 | 22.53 | **0.0020** |
+| LogisticRegression | 0.0340 | 7.13 | 0.019 |
+| QSVM | 0.0272 | 2.66 | 0.117 |
+
+VQC separates from the best classical model at p < 0.05 even after the
+correction, which is worth noting because three seeds leave the test badly
+underpowered — the VQC deficit is large and consistent enough to clear the bar
+anyway. QSVM does not separate: its direction is consistent across every seed
+but the corrected test does not reach significance, which is stated as measured
+rather than overclaimed.
 
 ### Quantum arm
 
@@ -224,6 +242,58 @@ essentially nothing. Bandwidth matters far more than topology: α = 0.25 and 0.5
 both reach 0.8405 while α = 1.0 drops to 0.8345, with kernel effective rank
 climbing from 2.9 to 83.7 — the classic bandwidth pathology, and evidence that
 an unbandwidthed quantum kernel would have looked much worse.
+
+### VQC arm — a second, independent quantum architecture
+
+The QSVM computes a *fixed* kernel from the encoding circuit and hands it to a
+classical SVM. The VQC places a *trainable* circuit after the same encoding and
+optimises its parameters against the classification loss directly:
+
+```
+|0>^n --[ feature map U_phi(x) ]--[ ansatz W(theta) ]-- readout
+```
+
+RealAmplitudes-style ansatz (RY layers alternating with CNOT entanglers),
+parity or single-qubit-Z readout, COBYLA training with SPSA available. Exact
+statevector simulation in numpy; 72 configurations searched per seed over qubit
+count, depth, feature map, bandwidth and readout, scored on a
+development-internal validation split.
+
+**Result: 0.8232 ± 0.0129** (per seed 0.8210 / 0.8370 / 0.8115). Last of
+eighteen models.
+
+*Ablations* (max validation accuracy over all seeds):
+
+| axis | values |
+|---|---|
+| qubits | 4 → 0.8220, 6 → 0.8200, 8 → 0.8250 |
+| depth (reps) | 2 → 0.8250, 4 → 0.8220 |
+| **feature map** | **Z (no entanglement) → 0.8250, ZZ → 0.8220** |
+| bandwidth α | 0.25 → 0.8130, 0.50 → 0.8220, 1.00 → 0.8250 |
+| readout | parity → 0.8250, single-qubit Z → 0.8215 |
+
+The entanglement-free Z map wins outright, and by mean validation accuracy the
+margin is wider still (0.8067 vs 0.7884). Two of the three seeds selected it.
+This reproduces the QSVM arm's conclusion on a completely different quantum
+learning mechanism: **entanglement contributes nothing on this data.**
+
+*Controls.* Against a classical logistic regression on the **identical** encoded
+features, the VQC's advantage is 0.8220 vs 0.8160, 0.8250 vs 0.8195, 0.8185 vs
+0.8145 — around half a point. A trainable quantum circuit is barely
+distinguishing itself from a linear model on its own representation. Against the
+matched-sample control, a HistGradientBoosting fitted on the *same 2,000 rows*
+beats the VQC in every seed (0.8445 / 0.8260 / 0.8335).
+
+*An implementation finding worth reporting.* The first version reached only 0.825
+on a linearly separable synthetic task, and a five-fold increase in optimiser
+budget moved it to 0.825 from 0.807 — pointing at representation rather than
+optimisation. Measuring the readout showed the cause: the raw expectation
+concentrates in a narrow band around zero (spread 0.4958–0.6459 at α = 0.25 with
+4 qubits), leaving the loss nearly flat in every direction. This is exponential
+concentration, the known VQC pathology. Adding two trainable readout parameters,
+a scale and a bias, took the same task to **0.995**. Any VQC benchmark without
+such a readout gain is measuring the pathology rather than the model, and would
+understate quantum performance here.
 
 ---
 
@@ -345,11 +415,13 @@ pip install numpy pandas scikit-learn scipy matplotlib seaborn lightgbm xgboost 
 
 # the exact result in this report
 python water_potability_pipeline.py --seeds 42 7 2024 --trials 30 --quantum-sub 1000
+python vqc_arm.py --seeds 42 7 2024 --outdir results
 python finalize.py --outdir results
 python selective.py --seeds 42 7 2024 --outdir results
 
 # verification
 python leakage_audit.py
+python vqc.py            # VQC simulator self-tests
 ```
 
 Seeds are set for the split, every estimator, Optuna's TPE sampler and the
@@ -465,8 +537,12 @@ The defensible contribution is not a leaderboard number. It is:
 1. A forensic characterisation of the dataset as a two-stratum mixture, with the
    overdispersion test, the mixture fits and the divergent labelling mechanisms.
 2. A quantitative ceiling that predicts observed performance to within 0.0002.
-3. A quantum-kernel benchmark with matched-representation *and* matched-sample
-   controls, showing no advantage — entanglement worth 0.0005, bandwidth worth
-   far more.
+3. A two-architecture quantum benchmark — kernel-based (QSVM) and variational
+   (VQC) — with matched-representation *and* matched-sample controls, showing no
+   advantage for either. Both arms independently find that entanglement
+   contributes essentially nothing (0.0005 for the QSVM; the entanglement-free
+   Z map wins outright for the VQC) while bandwidth matters far more. Reporting
+   a null result on two different quantum learning mechanisms is considerably
+   harder to attribute to one bad implementation choice than a single arm.
 4. Selective classification as the practical remedy, with a reject rule grounded
    in data quality rather than model confidence.
