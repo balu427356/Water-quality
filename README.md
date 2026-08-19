@@ -14,7 +14,13 @@ the ceiling that structure imposes.
 
 | file | purpose |
 |---|---|
-| `water_potability_pipeline.py` | the complete pipeline: forensics, ceiling analysis, representation search, 8-family classical arm with Optuna, 4-map quantum arm, ensembles, threshold tuning, multi-seed evaluation |
+| `run_all.sh` | one-command reproduction; runs verification first, then all four stages in order |
+| `requirements.txt` | pinned versions used for the committed results |
+| `water_potability_pipeline.py` | the complete pipeline: forensics, ceiling analysis, representation search, 8-family classical arm with Optuna, 4-map QSVM arm, ensembles, threshold tuning, multi-seed evaluation |
+| `vqc.py` | variational quantum classifier — statevector simulator, ansatz, training, self-tests |
+| `vqc_arm.py` | VQC hyperparameter search, matched controls, test evaluation |
+| `selective.py` | selective classification and risk–coverage analysis |
+| `finalize.py` | rebuilds summary, statistics and figures from `raw_results.csv` |
 | `leakage_audit.py` | executable proof of the leakage protocol; exits non-zero if any check fails |
 | `forensics.py` | standalone contamination forensics |
 | `probe_regimes.py` | per-stratum accuracy probes |
@@ -27,24 +33,43 @@ the ceiling that structure imposes.
 
 ```bash
 python -m venv .venv && . .venv/bin/activate
-pip install numpy pandas scikit-learn scipy matplotlib seaborn lightgbm xgboost catboost optuna
+pip install -r requirements.txt
 
-# full run: 10 seeds, publication settings (~2-3 h on 4 cores)
-python water_potability_pipeline.py
+./run_all.sh                    # everything, ~2.5-3 h on 4 cores
+```
 
-# fast smoke test (~10 min)
-python water_potability_pipeline.py --quick
+`run_all.sh` runs the two verification scripts first, so a broken environment
+fails in three minutes rather than three hours, then runs the four stages in
+order and tees each to `logs/`. It finds `.venv` automatically; override with
+`PYTHON=/path/to/python`.
 
-# reproduce one seed exactly
-python water_potability_pipeline.py --seeds 42 --trials 40
+```bash
+./run_all.sh --quick                    # smoke test, ~10 min, numbers not meaningful
+./run_all.sh --seeds "42 7 2024 1 13"   # more seeds, tighter error bars
+./run_all.sh --outdir results_new       # write elsewhere
+```
 
-# verify the leakage protocol
-python leakage_audit.py
+Or run the stages yourself. The order matters: `vqc_arm.py` merges its rows into
+`raw_results.csv`, so `finalize.py` has to come after it.
+
+```bash
+python water_potability_pipeline.py --seeds 42 7 2024 --trials 30 --quantum-sub 1000
+python vqc_arm.py   --seeds 42 7 2024 --outdir results
+python finalize.py  --outdir results
+python selective.py --seeds 42 7 2024 --outdir results
+
+python vqc.py            # VQC simulator self-tests
+python leakage_audit.py  # leakage protocol; exits non-zero on failure
 ```
 
 Outputs land in `results/`: `tables/` (CSV + JSON), `figures/` (600 dpi PNG and
 vector PDF), and `manifest.json` recording seeds, chosen representation, best
 model, and runtime.
+
+Results are written after **every seed**, so an interrupted run is still usable —
+rerun `finalize.py` alone to rebuild the summary from the seeds that finished.
+Most of the wall clock is the classical Optuna search (~50 min per seed, with
+RandomForest alone accounting for ~20 of that); the VQC arm adds ~5 min per seed.
 
 The dataset is read from the local `water_quality_potability.csv`. The original
 notebook downloaded it through `kagglehub`; that call was removed so the run does

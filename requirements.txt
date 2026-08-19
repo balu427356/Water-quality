@@ -1,0 +1,20 @@
+# Exact versions used to produce the results in results/ and REPORT.md.
+# Python 3.11.15.
+#
+# The majors matter here. The pipeline relies on QuantileTransformer, on
+# HistGradientBoostingClassifier's native handling of missing values, and on
+# RepeatedStratifiedKFold; all three have shifted behaviour across scikit-learn
+# and numpy majors. Pinning keeps a rerun comparable to the committed numbers.
+#
+#   pip install -r requirements.txt
+
+numpy==2.4.6
+pandas==3.0.5
+scikit-learn==1.9.0
+scipy==1.17.1
+matplotlib==3.11.1
+seaborn==0.13.2
+lightgbm==4.7.0
+xgboost==3.2.0
+catboost==1.2.10
+optuna==4.9.0

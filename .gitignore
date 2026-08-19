@@ -6,3 +6,6 @@ __pycache__/
 results_quick/
 results_smoke/
 results_timing/
+
+# per-stage logs written by run_all.sh
+logs/
