@@ -1,0 +1,13 @@
+model,cv_accuracy
+CatBoost,0.848125
+XGBoost,0.846875
+HistGradientBoosting,0.84675
+RegimeRouter,0.846375
+LightGBM,0.84625
+ExtraTrees,0.844125
+MLP,0.8435
+RandomForest,0.843
+RBF-SVM,0.836125
+Logistic-poly2,0.8355
+kNN,0.83375
+LogisticRegression,0.8195

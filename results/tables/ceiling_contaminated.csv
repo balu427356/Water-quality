@@ -1,0 +1,5 @@
+model,contaminated_cv_accuracy
+HistGB + corruption pattern,0.6370510396975425
+HistGB raw,0.6187775677378702
+LogisticRegression,0.6005040957781979
+majority baseline,0.5973534971644612

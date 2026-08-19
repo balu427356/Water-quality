@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+
+# scratch output from calibration and smoke runs; the committed run is results/
+results_quick/
+results_smoke/
+results_timing/
+
+# per-stage logs written by run_all.sh
+logs/
