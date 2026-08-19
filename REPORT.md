@@ -151,6 +151,7 @@ different generator, not a harder version of the same one.
 | `vqc.py` | variational quantum classifier — statevector simulator, ansatz, training, self-tests |
 | `vqc_arm.py` | VQC hyperparameter search, matched controls, test evaluation |
 | `tune_quantum_thresholds.py` | threshold-symmetry sensitivity analysis for both quantum arms |
+| `fence_sensitivity.py` | robustness of the stratification to the outlier-fence rule |
 | `selective.py` | selective classification and risk–coverage analysis |
 | `finalize.py` | summary, statistics and figures from `raw_results.csv` |
 | `leakage_audit.py` | executable leakage checks; exits non-zero on failure |
@@ -375,6 +376,24 @@ Per seed: 0.9054 / 0.9168 / **0.8884**. The mean clears 90% but **seed 2024 does
 not** — the honest statement is "90.4% on average, with one of three seeds at
 88.8%", not "90%+ guaranteed".
 
+Other operating points, read off the risk–coverage curve (confidence rejection,
+mean ± sd over the three seeds):
+
+| coverage | accuracy |
+|---|---|
+| 1.00 (no abstention) | 0.8552 ± 0.0098 |
+| 0.95 | 0.8723 ± 0.0108 |
+| 0.90 | 0.8869 ± 0.0103 |
+| 0.85 | 0.8994 ± 0.0115 |
+| **0.80** | **0.9102 ± 0.0125** |
+| 0.70 | 0.9260 ± 0.0154 |
+| 0.50 | 0.9297 ± 0.0240 |
+
+Accuracy crosses 90% at roughly 84% coverage and then flattens: dropping from
+70% to 50% coverage buys only 0.004. That plateau is the contaminated stratum
+being exhausted — once those rows are gone, what remains is the clean stratum's
+own Bayes noise, which no amount of further abstention removes.
+
 Two things worth noting. First, the confidence baseline is *better* than the
 stratum rule by 0.0060; the stratum rule's merit is not raw accuracy but that it
 is model-independent — it would reject the same rows for an untrained model, and
@@ -545,6 +564,46 @@ whose own Bayes limit is 0.9002. Working backwards:
 97% requires better-than-perfect accuracy on 80% of the data. It is not a hard
 target; it is an arithmetically impossible one.
 
+### Is the stratification an artefact of the outlier rule?
+
+Every number above flows through a detector that marks a cell as contaminated
+outside a Tukey 1.5×IQR fence — a conventional constant, not a derived one. The
+obvious challenge is whether the 80/20 split and the ceiling survive a different
+rule. Measured across seven rules and three seeds (`fence_sensitivity.py`):
+
+| fence rule | contaminated share | composed ceiling | router CV | selective acc | coverage |
+|---|---|---|---|---|---|
+| **Tukey 1.5×IQR** (committed) | 0.1995 ± 0.0017 | **0.8532 ± 0.0026** | 0.8481 | 0.9036 | 0.8030 |
+| Tukey 2.0×IQR | 0.1995 ± 0.0017 | 0.8532 ± 0.0026 | 0.8474 | 0.9042 | 0.8032 |
+| Tukey 3.0×IQR | 0.1991 ± 0.0017 | 0.8528 ± 0.0015 | 0.8472 | 0.9025 | 0.8042 |
+| 90th percentile | 0.2010 ± 0.0014 | 0.8537 ± 0.0046 | 0.8478 | 0.9049 | 0.8022 |
+| 95th percentile | 0.1793 ± 0.0004 | 0.8495 ± 0.0030 | 0.8435 | 0.8917 | 0.8203 |
+| 97.5th percentile | 0.0802 ± 0.0006 | 0.8401 ± 0.0018 | 0.8379 | 0.8652 | 0.9237 |
+| 99th percentile | 0.0131 ± 0.0004 | 0.8415 ± 0.0015 | 0.8364 | 0.8453 | 0.9865 |
+
+Tukey at 1.5, 2.0 and 3.0 and the 90th-percentile fence are **interchangeable** —
+the contaminated share moves by 0.002 and the composed ceiling by 0.001. That is
+what a genuinely separated mixture looks like: the components are far enough
+apart that the cut point barely matters. The 95th-percentile fence is slightly
+looser (17.9% contaminated) and costs 0.004 of ceiling.
+
+The rules only break down once the fence is wide enough to stop resolving the
+wide component at all: at the 97.5th percentile the detected contaminated share
+collapses to 8.0%, and at the 99th to 1.3% — against a true share near 20%.
+Both then *understate* the ceiling, because contaminated rows leak into the
+clean stratum and drag its measured ceiling down.
+
+Excluding the 99th percentile, the composed ceiling spans 0.8401 to 0.8537 — a
+range of 0.0136, entirely inside the seed-to-seed variation of the models
+themselves. **The stratification and the ceiling are not artefacts of the fence
+constant.**
+
+One rule was tested and rejected: cutting the *classification* threshold at the
+95th percentile of predicted probability, as one would in an anomaly-detection
+setting. On this exactly balanced table it predicts positive for 5% of rows when
+50% are positive, and out-of-fold accuracy falls from 0.8434 to **0.5500**.
+Percentile thresholds belong on the fence, not on the decision rule.
+
 ### What would be needed
 
 1. **The uncontaminated feature values.** The contamination is destructive — the
@@ -583,4 +642,9 @@ The defensible contribution is not a leaderboard number. It is:
    a null result on two different quantum learning mechanisms is considerably
    harder to attribute to one bad implementation choice than a single arm.
 4. Selective classification as the practical remedy, with a reject rule grounded
-   in data quality rather than model confidence.
+   in data quality rather than model confidence, and a risk–coverage curve that
+   flattens once the contaminated stratum is exhausted.
+5. A robustness study showing the stratification survives every reasonable
+   outlier rule (Tukey 1.5–3.0×IQR and the 90th percentile are interchangeable
+   to within 0.001 of composed ceiling), so the central claim does not rest on
+   an arbitrary constant.

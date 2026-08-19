@@ -112,22 +112,36 @@ def sub(t):
 class StratumDetector:
     """Splits rows into a clean and a contaminated stratum.
 
-    A cell is 'tail' when it falls outside the Tukey fence of its column. The
-    fences are estimated from the training data only, so applying the detector
-    to validation or test rows introduces no dependence on their labels or on
-    their marginal distributions. A row is contaminated when at least
-    `min_tails` of its nine cells are tail cells; the count distribution is
-    strongly bimodal (see the forensics stage) so the threshold is not delicate.
+    A cell is 'tail' when it falls outside its column's fence. The fences are
+    estimated from the training data only, so applying the detector to
+    validation or test rows introduces no dependence on their labels or on their
+    marginal distributions. A row is contaminated when at least `min_tails` of
+    its nine cells are tail cells; the count distribution is strongly bimodal
+    (see the forensics stage) so the threshold is not delicate.
+
+    Two fence rules are available. `tukey` is the default and the one behind
+    every committed result: q1 - k*IQR to q3 + k*IQR. `percentile` instead cuts
+    at the (100-q) and q percentiles of each column, which is what one would
+    reach for coming from an anomaly-detection background. The alternative
+    exists so the stratification can be shown not to be an artefact of the Tukey
+    constant -- see fence_sensitivity.py.
     """
 
-    def __init__(self, k=1.5, min_tails=3):
+    def __init__(self, k=1.5, min_tails=3, fence="tukey", q=95.0):
         self.k, self.min_tails = k, min_tails
+        self.fence, self.q = fence, q
 
     def fit(self, X, y=None):
-        q1 = np.quantile(X, 0.25, axis=0)
-        q3 = np.quantile(X, 0.75, axis=0)
-        iqr = q3 - q1
-        self.lo_, self.hi_ = q1 - self.k * iqr, q3 + self.k * iqr
+        if self.fence == "percentile":
+            self.lo_ = np.percentile(X, 100.0 - self.q, axis=0)
+            self.hi_ = np.percentile(X, self.q, axis=0)
+        elif self.fence == "tukey":
+            q1 = np.quantile(X, 0.25, axis=0)
+            q3 = np.quantile(X, 0.75, axis=0)
+            iqr = q3 - q1
+            self.lo_, self.hi_ = q1 - self.k * iqr, q3 + self.k * iqr
+        else:
+            raise ValueError(f"unknown fence rule: {self.fence!r}")
         return self
 
     def mask(self, X):
