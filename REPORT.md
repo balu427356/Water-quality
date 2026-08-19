@@ -150,6 +150,7 @@ different generator, not a harder version of the same one.
 | `water_potability_pipeline.py` | forensics, ceiling analysis, representation search, classical arm, QSVM arm, ensembles, threshold, multi-seed evaluation |
 | `vqc.py` | variational quantum classifier — statevector simulator, ansatz, training, self-tests |
 | `vqc_arm.py` | VQC hyperparameter search, matched controls, test evaluation |
+| `tune_quantum_thresholds.py` | threshold-symmetry sensitivity analysis for both quantum arms |
 | `selective.py` | selective classification and risk–coverage analysis |
 | `finalize.py` | summary, statistics and figures from `raw_results.csv` |
 | `leakage_audit.py` | executable leakage checks; exits non-zero on failure |
@@ -277,6 +278,32 @@ margin is wider still (0.8067 vs 0.7884). Two of the three seeds selected it.
 This reproduces the QSVM arm's conclusion on a completely different quantum
 learning mechanism: **entanglement contributes nothing on this data.**
 
+*Threshold symmetry.* The classical models all have their decision threshold
+swept on out-of-fold development scores; the quantum arms as reported do not,
+using the SVC decision-function sign (QSVM) and 0.5 on the parity probability
+(VQC). Rather than argue that the asymmetry is too small to matter, it was
+measured (`tune_quantum_thresholds.py`, results in
+`results/tables/quantum_threshold_tuning.csv`). Applying the identical sweep:
+
+| arm | as reported | threshold-tuned | Δ |
+|---|---|---|---|
+| QSVM | 0.8335 ± 0.0015 | 0.8300 ± 0.0030 | −0.0035 |
+| VQC | 0.8160 ± 0.0087 | 0.8117 ± 0.0094 | −0.0043 |
+
+Tuning **lowers** quantum test accuracy, in five of six arm–seed pairs, while
+raising out-of-fold accuracy in every one. The cause is sample size: the O(N²)
+kernel restricts the quantum arms to a subsampled development partition, so
+their out-of-fold scores come from far fewer rows than the classical models'
+8,000, and the threshold overfits. Reporting the quantum arms untuned is
+therefore **conservative in their favour**, which disposes of the objection in
+the opposite direction to the one expected.
+
+These figures are a sensitivity analysis, not the primary result. Substituting
+them because they differ on test would be selection on the test partition — the
+thing the whole protocol exists to prevent — and the VQC numbers here use a
+smaller training subsample than `vqc_arm.py`, so they are not comparable to the
+main table row.
+
 *Controls.* Against a classical logistic regression on the **identical** encoded
 features, the VQC's advantage is 0.8220 vs 0.8160, 0.8250 vs 0.8195, 0.8185 vs
 0.8145 — around half a point. A trainable quantum circuit is barely
@@ -318,7 +345,17 @@ understate quantum performance here.
   CV on the development partition. Per-seed winners in
   `results/tables/classical_cv_seed*.csv`.
 - **Threshold** swept on out-of-fold predictions, then frozen. Seed 42 → 0.5573,
-  seed 7 → 0.5568, seed 2024 → 0.6097. Notably **not** 0.5.
+  seed 7 → 0.5015, seed 2024 → 0.6621. Notably **not** 0.5. Swept as a single
+  sorted pass (O(n log n)); the naive candidate-by-candidate form is ~64M
+  comparisons per model at 8,000 development rows and is called for every family
+  and every ensemble. Verified against the naive implementation on 40 random
+  cases plus all-zero, all-one and tied-score edge cases.
+
+  The gain is real but small, as expected on an exactly balanced table where 0.5
+  is already close to optimal. Measured against the counterfactual on the best
+  out-of-fold model: seed 42 0.8545 vs 0.8541, seed 7 0.8499 vs 0.8491, seed 2024
+  0.8526 vs 0.8471. Two seeds gained almost nothing; one gained half a point. It
+  is worth having for correctness rather than as a lever.
 - **Test accuracy 0.8607 ± 0.0136.**
 - **97% target: NO. 90% target: NO.** See section I.
 
@@ -391,6 +428,7 @@ Run `python leakage_audit.py`; it exits non-zero if any check fails.
 | model selection used only CV/validation | representation, hyperparameters, ensemble weights and threshold all come from out-of-fold development predictions |
 | no distribution shift | adversarial validation dev-vs-test AUC = **0.4996 ± 0.0122** |
 | threshold not tuned on test | the frozen out-of-fold threshold differs from the test-optimal one, and the accuracy difference is reported rather than claimed |
+| threshold treatment is symmetric across arms | quantum arms were re-run with the classical sweep; it lowers their accuracy, so the reported figures favour them (section D) |
 
 Two leakage bugs were found and fixed during development, both recorded in the
 git history:
