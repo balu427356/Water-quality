@@ -96,7 +96,11 @@ The values are random, so **no number from this run means anything**; it only sh
   protocol), §15e (training tiers) and Table 60 (claim check) all render.
 * With 100 bootstrap draws the smallest Holm-adjusted p for a family of nine comparisons is 0.09, so the claim check cannot mark those
   claims "supported" in the smoke run; with the notebook's 1,000 draws the floor is 0.009.
-* v13 on the same file: run in progress (it shares the harness and data; result added when it finishes).
+* **v13 on the same file also executed without error** (9 leakage checks pass), so the harness and the synthetic file are valid.
+* Mechanism check (synthetic data, not a result): the evaluation samples are identical in both runs, and the formula rule changes
+  only through correction 4. Its tier-A accuracy rises in every country (England 0.868 → 0.876, Ireland 0.926 → 0.962,
+  Canada 0.910 → 0.935, repeat 1). Carrying the last genuine value forward makes the comparator stronger, as expected; how much on
+  the real data is for the v14 run to show.
 
 ## 7. Next steps
 
