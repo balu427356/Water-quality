@@ -12,6 +12,8 @@ import { ZoneDetailPage } from '@/features/zones/ZoneDetailPage';
 import { SensorsPage } from '@/features/sensors/SensorsPage';
 import { MissionsPage } from '@/features/missions/MissionsPage';
 import { AlertsPage } from '@/features/alerts/AlertsPage';
+import { ReportsPage } from '@/features/reports/ReportsPage';
+import { SurveyReportPage } from '@/features/reports/SurveyReportPage';
 import { SettingsPage } from '@/features/settings/SettingsPage';
 
 function RequireAuth({ children, roles }: { children: ReactNode; roles?: Role[] }) {
@@ -48,6 +50,8 @@ export default function App() {
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="zones/:zoneId" element={<ZoneDetailPage />} />
         <Route path="sensors" element={<SensorsPage />} />
+        <Route path="reports" element={<ReportsPage />} />
+        <Route path="reports/:surveyId" element={<SurveyReportPage />} />
         <Route
           path="settings"
           element={

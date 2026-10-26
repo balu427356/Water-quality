@@ -60,6 +60,21 @@ function FitBounds({ points }: { points: LatLon[] }) {
   const map = useMap();
   const key = points.length ? `${points[0][0]},${points[0][1]},${points.length}` : '';
   useEffect(() => {
+    if (!points.length) return;
+    const fit = () => {
+      map.invalidateSize();
+      map.fitBounds(L.latLngBounds(points.map(([a, b]) => L.latLng(a, b))), { padding: [16, 16], animate: false });
+    };
+    // Re-fit when printing: the page layout (and the map's size) changes for paper.
+    const mq = window.matchMedia?.('print');
+    window.addEventListener('beforeprint', fit);
+    mq?.addEventListener?.('change', fit);
+    return () => {
+      window.removeEventListener('beforeprint', fit);
+      mq?.removeEventListener?.('change', fit);
+    };
+  }, [key, map]);
+  useEffect(() => {
     if (points.length) map.fitBounds(L.latLngBounds(points.map(([a, b]) => L.latLng(a, b))), { padding: [16, 16] });
     // Refit only when the geometry changes, not on every live update.
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { BarChart3, Bell, Cpu, Gauge, LogOut, Map, Route as RouteIcon, Settings } from 'lucide-react';
+import { BarChart3, Bell, Cpu, FileText, Gauge, LogOut, Map, Route as RouteIcon, Settings } from 'lucide-react';
 import { useData, useSnapshot, isAdmin } from '@/data/DataProvider';
 import { LoadingState } from '@/components/ChartCard';
 import { AlertNotifier } from '@/features/alerts/AlertNotifier';
@@ -22,6 +22,7 @@ const NAV: NavItem[] = [
   { to: '/missions', label: 'Missions', icon: RouteIcon },
   { to: '/analytics', label: 'Analytics', icon: BarChart3, primary: true },
   { to: '/sensors', label: 'Sensors', icon: Cpu, primary: true },
+  { to: '/reports', label: 'Reports', icon: FileText },
 ];
 
 export function AppShell() {
@@ -46,11 +47,11 @@ export function AppShell() {
     ) : null;
 
   return (
-    <div className="flex h-full flex-col md:flex-row">
+    <div className="flex h-full flex-col md:flex-row print:block print:h-auto">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-[2000] focus:m-2 focus:rounded focus:bg-card focus:p-2">
         Skip to content
       </a>
-      <aside className="hidden w-56 shrink-0 flex-col border-r bg-card md:flex short:w-14">
+      <aside className="hidden w-56 shrink-0 flex-col border-r bg-card md:flex short:w-14 print:hidden">
         <Brand />
         <nav aria-label="Main" className="flex-1 space-y-1 px-2">
           {items.map((n) => (
@@ -80,7 +81,7 @@ export function AppShell() {
         </div>
       </aside>
 
-      <header className="flex items-center justify-between border-b bg-card px-4 py-2 md:hidden">
+      <header className="flex items-center justify-between border-b bg-card px-4 py-2 md:hidden print:hidden">
         <Brand compact />
         <nav aria-label="More" className="flex items-center gap-1">
           {items
@@ -96,7 +97,7 @@ export function AppShell() {
         </nav>
       </header>
 
-      <main id="main" className="min-h-0 min-w-0 flex-1 overflow-y-auto pb-16 md:pb-0">
+      <main id="main" className="min-h-0 min-w-0 flex-1 overflow-y-auto pb-16 md:pb-0 print:overflow-visible print:pb-0">
         {source.kind === 'demo' && (
           <div className="border-b bg-amber-50 px-4 py-1.5 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-100 short:hidden">
             Demo mode: simulated boat and stations on a seeded demo lake. No real hardware is connected.
@@ -105,7 +106,7 @@ export function AppShell() {
         {snap.ready ? <Outlet /> : <LoadingState text="Loading water body…" />}
       </main>
 
-      <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-[1100] flex border-t bg-card md:hidden">
+      <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-[1100] flex border-t bg-card md:hidden print:hidden">
         {items
           .filter((n) => n.primary)
           .map((n) => (

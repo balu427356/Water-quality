@@ -14,6 +14,7 @@ import {
   type PlannerResponse,
 } from './planner.ts';
 import { pointInPolygon } from './geo.ts';
+import type { ScoreRequest, ScoreResponse } from './scoring.ts';
 import type {
   Boat,
   Command,
@@ -270,4 +271,42 @@ export function validateWaterBodyEdit(current: WaterBody, patch: { geofence?: Po
   const outside = next.geofence.filter((p) => !pointInPolygon(p, next.boundary)).length;
   if (outside > 0) throw new Error(`${outside} geofence point(s) are outside the water-body boundary.`);
   return next;
+}
+
+// ------------------------------------------------------------------ closing the loop: mission → survey → scores
+
+/**
+ * A completed mission becomes a survey: its boat and lab readings between start and end are
+ * attached to it and scored. Aborted missions do not produce a survey.
+ */
+export function surveyFromMission(mission: Mission, surveys: Survey[], waterBodyId: string): Survey {
+  if (mission.status !== 'completed' || !mission.started_at || !mission.ended_at) throw new Error('Only completed missions become surveys.');
+  const max = surveys.reduce((m, x) => Math.max(m, Number(/SV-(\d+)/.exec(x.id)?.[1] ?? 0)), 0);
+  return {
+    id: `SV-${String(max + 1).padStart(3, '0')}`,
+    water_body_id: waterBodyId,
+    type: mission.kind === 'scheduled' ? 'scheduled' : 'unscheduled',
+    started_at: mission.started_at,
+    ended_at: mission.ended_at,
+    status: 'completed',
+    mission_id: mission.id,
+  };
+}
+
+export function surveyReadings(readings: Reading[], survey: Survey): Reading[] {
+  return readings.filter((r) => r.source_type !== 'station' && r.survey_id == null && r.ts >= survey.started_at && r.ts <= (survey.ended_at ?? r.ts));
+}
+
+export function scoreRequestFor(survey: Survey, readings: Reading[], zones: Zone[], parameters: Parameter[], settings: Settings): ScoreRequest {
+  return {
+    survey_id: survey.id,
+    zones: zones.map((z) => z.id),
+    readings: readings.map((r) => ({ zone_id: r.zone_id, parameter_key: r.parameter_key, value: r.value, edge_anomaly_flag: r.edge_anomaly_flag, trust_T: r.trust_T })),
+    parameters,
+    settings: { trust_threshold: settings.trust_threshold, tier_cutoffs: settings.tier_cutoffs, near_limit_pct: settings.near_limit_pct },
+  };
+}
+
+export function zoneScoresFrom(res: ScoreResponse, computedAt: string): ZoneScore[] {
+  return res.zone_scores.map((z) => ({ id: `ZS-${res.survey_id}-${z.zone_id}`, survey_id: res.survey_id, computed_at: computedAt, ...z }));
 }

@@ -113,3 +113,11 @@ describe('scheduled surveys', () => {
     expect(scheduledProposalNeeded(next - 86_400_000 + 1000, surveys, [m], DEFAULT_SETTINGS)).toBeNull();
   });
 });
+
+describe('plan fixture shared with the Python planner service', () => {
+  it('mock plan matches the committed fixture', async () => {
+    const { readFileSync } = await import('node:fs');
+    const f = JSON.parse(readFileSync(new URL('../../../planner-service/tests/fixtures/plan_fixture.json', import.meta.url), 'utf8'));
+    expect(mockPlan(f.request)).toEqual(f.expected);
+  });
+});

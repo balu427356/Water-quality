@@ -2,8 +2,8 @@
 
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
 import { DEFAULT_ALERT_RULES, applyCandidates, emptyMemory, missionProposedCandidate, type Candidate } from '../_shared/alertEngine.ts';
-import { buildPlannerRequest, proposeMission, type OpsContext, type PlanInput } from '../_shared/operations.ts';
-import { plannerClientFor } from '../_shared/plannerClient.ts';
+import { buildPlannerRequest, proposeMission, scoreRequestFor, surveyFromMission, zoneScoresFrom, type OpsContext, type PlanInput } from '../_shared/operations.ts';
+import { MockScoringClient, plannerClientFor, scoringClientFor } from '../_shared/plannerClient.ts';
 import { DEFAULT_SETTINGS, type AlertRule, type Profile, type Settings } from '../_shared/types.ts';
 
 export async function rows<T>(db: SupabaseClient, table: string, filter?: (q: any) => any): Promise<T[]> {
@@ -75,4 +75,44 @@ export async function planAndStore(db: SupabaseClient, actor: Profile | null, in
   if (plan.mission.kind !== 'manual') await insertCandidates(db, [missionProposedCandidate(plan.mission, input.why ?? '')]);
   await audit(db, actor?.id ?? null, 'mission.plan', 'missions', plan.mission.id, { kind: input.kind, solver: response.solver, planner: client.label, energy: plan.mission.energy_planned, budget: input.energy_budget });
   return plan.mission;
+}
+
+/**
+ * Close the loop: every completed mission without a survey becomes a survey; its boat and lab
+ * readings are attached and scored (scoring service, or in-app scoring if it fails).
+ */
+export async function finalizeCompletedMissions(db: SupabaseClient): Promise<string[]> {
+  const done = await rows<any>(db, 'missions', (q) => q.eq('status', 'completed'));
+  if (!done.length) return [];
+  const surveys = await rows<any>(db, 'surveys');
+  const pending = done.filter((m) => !surveys.some((s) => s.mission_id === m.id));
+  if (!pending.length) return [];
+  const ctx = await loadOpsContext(db);
+  const created: string[] = [];
+  for (const m of pending) {
+    const survey = surveyFromMission(m, [...surveys, ...created.map((id) => ({ id }))] as any, ctx.waterBody.id);
+    const ins = await db.from('surveys').insert(survey);
+    if (ins.error) throw new Error(`surveys: ${ins.error.message}`);
+    created.push(survey.id);
+    await db
+      .from('readings')
+      .update({ survey_id: survey.id })
+      .is('survey_id', null)
+      .in('source_type', ['boat', 'lab'])
+      .gte('ts', survey.started_at)
+      .lte('ts', survey.ended_at!);
+    const readings = await rows<any>(db, 'readings', (q) => q.eq('survey_id', survey.id).limit(20000));
+    const req = scoreRequestFor(survey, readings, ctx.zones, ctx.parameters, ctx.settings);
+    const client = scoringClientFor(ctx.settings.planner_mode, ctx.settings.planner_url, Deno.env.get('PLANNER_API_KEY') ?? undefined);
+    let res;
+    try {
+      res = await client.score(req);
+    } catch (e) {
+      res = await new MockScoringClient().score(req);
+      await audit(db, null, 'survey.score_fallback', 'surveys', survey.id, { error: (e as Error).message });
+    }
+    await db.from('zone_scores').insert(zoneScoresFrom(res, new Date().toISOString()));
+    await audit(db, null, 'survey.scored', 'surveys', survey.id, { mission: m.id, readings: readings.length, method: res.method, scorer: client.label });
+  }
+  return created;
 }

@@ -1,0 +1,67 @@
+{
+ "request": {
+  "water_body_id": "WB1",
+  "boat_id": "B1",
+  "energy_budget": 14,
+  "zones": [
+   {
+    "zone_id": "A",
+    "risk_R": 0.9,
+    "trust_T": 0.9
+   },
+   {
+    "zone_id": "B",
+    "risk_R": 0.8,
+    "trust_T": 0.3
+   },
+   {
+    "zone_id": "C",
+    "risk_R": 0.3,
+    "trust_T": 0.8
+   },
+   {
+    "zone_id": "D",
+    "risk_R": 0.1,
+    "trust_T": 0.9
+   }
+  ],
+  "levels": {
+   "skip": 0,
+   "confirm": 1,
+   "standard_25m": 3,
+   "dense_10m": 6,
+   "hotspot_5m": 10
+  }
+ },
+ "expected": {
+  "solver": "mock",
+  "energy_planned": 14,
+  "objective": 2.69,
+  "zones": [
+   {
+    "zone_id": "A",
+    "level": "hotspot_5m",
+    "energy": 10,
+    "reason": "High risk and high trust: map the hotspot at 5 m spacing."
+   },
+   {
+    "zone_id": "B",
+    "level": "confirm",
+    "energy": 1,
+    "reason": "High risk but low trust: one confirmation sample before chasing."
+   },
+   {
+    "zone_id": "C",
+    "level": "standard_25m",
+    "energy": 3,
+    "reason": "Moderate risk, trusted data: standard 25 m survey."
+   },
+   {
+    "zone_id": "D",
+    "level": "skip",
+    "energy": 0,
+    "reason": "Low risk: skip this survey to save energy."
+   }
+  ]
+ }
+}

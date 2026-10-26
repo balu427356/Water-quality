@@ -52,3 +52,9 @@
 .leaflet-container { font: inherit; background: #cfe3ea; }
 .leaflet-div-icon.aq-icon { background: transparent; border: none; }
 .stale { opacity: 0.5; filter: grayscale(0.6); transition: opacity 0.3s; }
+
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .leaflet-control-container { display: none; }
+}

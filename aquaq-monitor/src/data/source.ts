@@ -101,6 +101,8 @@ export interface DataSource {
   updateSettings(user: Profile, patch: Partial<Settings>): Promise<void>;
   simControl(user: Profile, a: SimAction): Promise<void>;
   listAudit(limit?: number): Promise<AuditEntry[]>;
+  /** Alerts created in a time window (reports), including resolved ones older than the live list keeps. */
+  listAlerts(from: string, to: string): Promise<Alert[]>;
 
   acknowledgeAlert(user: Profile, id: string): Promise<void>;
   resolveAlert(user: Profile, id: string, note: string): Promise<void>;

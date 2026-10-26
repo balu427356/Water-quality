@@ -351,6 +351,12 @@ export class SupabaseSource implements DataSource {
     await this.op({ action: 'zone_polygon', zone_id: zoneId, polygon });
   }
 
+  async listAlerts(from: string, to: string) {
+    const { data, error } = await this.client.from('alerts').select('*').gte('created_at', from).lte('created_at', to).order('created_at').limit(2000);
+    if (error) throw error;
+    return (data ?? []) as Alert[];
+  }
+
   async listAudit(limit = 100) {
     const { data, error } = await this.client.from('audit_log').select('*').order('ts', { ascending: false }).limit(limit);
     if (error) throw error;

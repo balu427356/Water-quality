@@ -43,6 +43,10 @@ import {
   changeZoneLevel,
   prepareCommand,
   proposeMission,
+  scoreRequestFor,
+  surveyFromMission,
+  surveyReadings,
+  zoneScoresFrom,
   timedOut,
   validatePolygon,
   validateWaterBodyEdit,
@@ -68,7 +72,7 @@ import {
   type WaterBody,
   type Zone,
 } from '@shared/types.ts';
-import { plannerClientFor } from '@/api/plannerClient';
+import { MockScoringClient, plannerClientFor, scoringClientFor } from '@/api/plannerClient';
 import { TRAIL_WINDOW_MS, emptySnapshot, matchesQuery, type DataSource, type ReadingQuery, type SimAction, type Snapshot } from './source';
 
 export const DEMO_USERS: (Profile & { password: string })[] = [
@@ -250,6 +254,7 @@ export class DemoSource implements DataSource {
         speed_factor: res.state.speed_factor,
       },
     };
+    for (const u of res.missionUpdates) if (u.status === 'completed') void this.finalizeMission(u.mission_id);
     if (this.ready) this.maybeProposeScheduled(now, false);
     this.runAlerts(now, res.readings);
     if (emit) this.emit();
@@ -261,6 +266,31 @@ export class DemoSource implements DataSource {
     void this.planMission(SCHEDULER, { kind: 'scheduled', energy_budget: this.snap.settings.energy_budget }).catch((e: unknown) => {
       this.log(SCHEDULER, 'mission.plan_failed', 'missions', '-', { error: e instanceof Error ? e.message : String(e) });
     });
+  }
+
+  /** Close the loop: a completed mission becomes a survey, scored by the scoring service (or in-app scoring). */
+  private async finalizeMission(missionId: string) {
+    const m = this.snap.missions.find((x) => x.id === missionId);
+    if (!m || m.status !== 'completed' || this.snap.surveys.some((x) => x.mission_id === missionId)) return;
+    const survey = surveyFromMission(m, this.snap.surveys, this.snap.waterBody!.id);
+    const rs = surveyReadings(this.live, survey);
+    const ids = new Set(rs.map((r) => r.id));
+    const tag = (r: Reading) => (ids.has(r.id) ? { ...r, survey_id: survey.id } : r);
+    this.live = this.live.map(tag);
+    this.snap = { ...this.snap, surveys: [...this.snap.surveys, survey], recentReadings: this.snap.recentReadings.map(tag) };
+    const req = scoreRequestFor(survey, rs, this.snap.zones, this.snap.parameters, this.snap.settings);
+    const client = scoringClientFor(this.snap.settings.planner_mode, this.snap.settings.planner_url);
+    let res;
+    try {
+      res = await client.score(req);
+    } catch (e) {
+      // The survey still gets scores: fall back to in-app scoring and record why.
+      res = await new MockScoringClient().score(req);
+      this.log(SCHEDULER, 'survey.score_fallback', 'surveys', survey.id, { error: e instanceof Error ? e.message : String(e) });
+    }
+    this.snap = { ...this.snap, zoneScores: [...this.snap.zoneScores, ...zoneScoresFrom(res, new Date().toISOString())] };
+    this.log(SCHEDULER, 'survey.scored', 'surveys', survey.id, { mission: missionId, readings: rs.length, method: res.method, scorer: client.label });
+    this.emit();
   }
 
   private opsContext(now = Date.now()): OpsContext {
@@ -599,6 +629,10 @@ export class DemoSource implements DataSource {
     lsSet(LS_GEOMETRY, { ...saved, zones: { ...(saved.zones ?? {}), [zoneId]: { polygon } } });
     this.log(user, 'zone.update', 'zones', zoneId, { points: polygon.length });
     this.emit();
+  }
+
+  async listAlerts(from: string, to: string) {
+    return this.snap.alerts.filter((a) => a.created_at >= from && a.created_at <= to);
   }
 
   async listAudit(limit = 100) {

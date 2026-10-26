@@ -9,7 +9,7 @@ import webpush from 'npm:web-push@3.6.7';
 import { emptyMemory, runEngine, type EngineMemory } from '../_shared/alertEngine.ts';
 import { DEFAULT_SETTINGS, type Alert, type AlertRule, type Command, type Settings } from '../_shared/types.ts';
 import { scheduledProposalNeeded } from '../_shared/planner.ts';
-import { planAndStore } from '../_server/ops.ts';
+import { finalizeCompletedMissions, planAndStore } from '../_server/ops.ts';
 
 const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -31,6 +31,8 @@ async function all<T>(table: string, filter?: (q: any) => any): Promise<T[]> {
 
 async function evaluate() {
   const now = Date.now();
+  // New surveys first, so a tier change from a just-finished mission is alerted in this run.
+  const surveysCreated = await finalizeCompletedMissions(db);
   const { data: st } = await db.from('engine_state').select('*').eq('id', 1).maybeSingle();
   const memory: EngineMemory = (st?.memory as EngineMemory) ?? emptyMemory();
   const cursor: string = st?.cursor ?? new Date(now - 60_000).toISOString();
@@ -82,7 +84,7 @@ async function evaluate() {
   // Escalations go to operators and admins only; new alerts follow the rule's channels.
   const escalatedNew = res.escalated.filter((e) => !res.created.some((c) => c.id === e.id));
   const sent = await dispatch(rules, res.created, escalatedNew);
-  return { readings: readings.length, created: res.created.length, merged: res.merged.length, escalated: escalatedNew.length, sent, proposed };
+  return { readings: readings.length, created: res.created.length, merged: res.merged.length, escalated: escalatedNew.length, sent, proposed, surveysCreated };
 }
 
 async function dispatch(rules: AlertRule[], created: Alert[], escalated: Alert[]) {

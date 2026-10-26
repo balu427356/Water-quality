@@ -3,12 +3,20 @@
 Operator app for quantum-assisted water-quality monitoring: an autonomous survey boat, fixed sensor
 stations, and a server-side trust → risk → mission-planning chain. Responsive web app, installable as a PWA.
 
-**Status: Phases 1–3 (monitoring, alerts, missions and boat control).** Auth and roles, data model and
-seed data, dashboard, live map, analytics, zone details, sensors page, simulator; the alert rule engine
-with notification centre, escalation and web push; mission planning (mock planner), plan review and
-approval, boat commands with acknowledgements, emergency stop, manual mode, pre-mission checklist,
-maintenance tasks and geofence/zone editing. Real integrations and reports (Phase 4) come next. See
-[Roadmap](#roadmap).
+**Status: Phases 1–4 complete.**
+
+- **Monitoring:** auth and roles, dashboard, live map, analytics, zone details, sensors page, simulator.
+- **Alerts:** the alert rule engine with notification centre, escalation and web push.
+- **Missions and control:** mission planning, review and approval; boat commands with
+  acknowledgements, emergency stop, manual mode, pre-mission checklist and geofence editing.
+- **Integration:**
+  - the Python planner service (QUBO solved with simulated QAOA or the classical fallback, plus
+    zone scoring);
+  - the MQTT boat gateway with a boat emulator;
+  - finished missions become scored surveys automatically.
+- **Reports:** PDF survey reports and raw CSV export.
+
+See [Roadmap](#roadmap).
 
 ## Quick start (no backend needed)
 
@@ -72,6 +80,9 @@ resets when the page reloads.
 | `npm test` | Unit tests (Vitest) |
 | `npm run typecheck` | TypeScript only |
 | `npm run seed:supabase` | Seed a Supabase project (see below) |
+| `npm run gateway` | MQTT ↔ Supabase boat gateway (see [Boat gateway](#boat-gateway)) |
+| `npm run boat-emulator` | Demo-lake boat and stations speaking the gateway's MQTT protocol |
+| `npm run fixtures` | Regenerate the planner-service parity fixtures from the TypeScript code |
 
 ## Environment variables
 
@@ -87,6 +98,8 @@ Copy `.env.example` to `.env.local`.
 | `CRON_SECRET` | Edge Function secret | Shared secret between pg_cron and the `simulator` / `alerts` functions |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Edge Function secrets | Web push signing (`npx web-push generate-vapid-keys`) |
 | `EMAIL_WEBHOOK_URL`, `SMS_WEBHOOK_URL` | Edge Function secrets | Optional HTTP endpoints of your email/SMS provider; empty in v1, so those channels are skipped |
+| `PLANNER_API_KEY` | Edge Function secret + planner service | Bearer key between the `operations`/`alerts` functions and the planner service |
+| `MQTT_URL`, `MQTT_USERNAME`, `MQTT_PASSWORD`, `BOAT_IDS` | gateway host | Broker connection and boats the gateway serves |
 
 Never put the service-role key or email/SMS provider keys in a `VITE_` variable: anything prefixed
 `VITE_` is shipped to the browser.
@@ -106,18 +119,15 @@ Never put the service-role key or email/SMS provider keys in a `VITE_` variable:
 5. Set `VITE_DATA_SOURCE=supabase`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and
    `VITE_VAPID_PUBLIC_KEY`, and rebuild.
 
-**Simulator → real boat gateway.** The production gateway (MQTT over 4G → bridge) writes the same rows the
-simulator writes: one `boat_telemetry` row and one `readings` row per probe per message (contract in
-section 9 of the brief), plus an update of the `boats` row. Unschedule the simulator
-(`select cron.unschedule('aquaq-simulator')`) and point the bridge at the database with a service-role key
-kept on the bridge. Keep the `aquaq-alerts` schedule: the alert engine works on whatever writes readings.
-Confirmation samples are written with `confirmation = true`. The bridge also reads `commands` rows for
-the boat (`pending`), forwards them over MQTT and writes back `acknowledged` / `executed` / `failed`
-with `ack_at`, `done_at` and `result`; mission progress goes to `missions.status` and `waypoints.status`.
-`LOAD_MISSION` carries the route in its payload. The app does not change.
+**Simulator → real boat gateway.** Run `gateway/` (see [Boat gateway](#boat-gateway)) next to your MQTT
+broker, unschedule the simulator (`select cron.unschedule('aquaq-simulator')`) and keep the
+`aquaq-alerts` schedule. The gateway writes the same rows the simulator writes, so the app does not
+change.
 
-**Mock planner → quantum planner service.** In **Settings → Integrations** choose *Planner service URL*
-and enter its base URL; the app calls `POST <url>/plan` with the section 9 request. With Supabase the
+**Mock planner → planner service.** Deploy `planner-service/` (FastAPI; see its
+[README](planner-service/README.md)). In **Settings → Integrations** choose *Planner service URL* and
+enter its base URL; the app calls `POST <url>/plan` with the section 9 request, and `POST <url>/score`
+when a mission finishes. With Supabase the
 `operations` function makes the call and adds `Authorization: Bearer $PLANNER_API_KEY` (a function
 secret, never sent to browsers). The response is validated (known zones and levels, within budget,
 route inside the geofence) before it becomes a proposed mission, and the solver it reports
@@ -130,7 +140,7 @@ which is only suitable for a local planner during development.
 ```
 aquaq-monitor/
 ├─ src/
-│  ├─ api/             typed external-service clients (planner)
+│  ├─ api/             typed external-service clients (planner and scoring)
 │  ├─ data/            DataSource interface, demo (in-browser) and Supabase implementations, selectors
 │  ├─ components/      UI primitives (shadcn-style), status badges, map, chart card
 │  ├─ features/        one folder per feature: auth, dashboard, map, control, missions, alerts, analytics,
@@ -148,7 +158,9 @@ aquaq-monitor/
 │     ├─ alerts/       Edge Function: alert engine, escalation, scheduled-survey proposals, push/email/SMS
 │     └─ operations/   Edge Function: planning, approval, boat commands, maintenance and geometry edits,
 │                      validated with the shared rules as the signed-in user
-└─ scripts/seed-supabase.ts
+├─ gateway/           MQTT ↔ database bridge, Supabase store, boat emulator (+ end-to-end test)
+├─ planner-service/   Python FastAPI planner: /plan (QUBO, simulated QAOA, classical fallback) and /score
+└─ scripts/           seed-supabase.ts, make-fixtures.ts
 ```
 
 The browser and the Edge Functions run the same simulator, alert-engine, planner and command-validation
@@ -202,9 +214,32 @@ row must name the caller. The simulator, alert engine and gateway use the servic
 - **Drivers:** hazard weight × (mean ÷ limit − 0.75); positive pushes toward unsafe.
 - **Estimated source (★)** on the map: location of the strongest trusted, hazard-weighted exceedance.
 
-In Phase 1 the seeded zone scores stand in for the scoring service; the demo lake's latest survey
-matches the table in section 10 (A 0.9/0.9, B 0.8/0.3, C 0.3/0.8, D 0.1/0.9). Every plan shows the
-solver that produced it; the demo mission is labelled *mock planner*.
+**Scoring (`/score`, method `classical_v1`).** Every new survey is scored the same way in the app
+(`_shared/scoring.ts`) and in the planner service, which a shared fixture checks:
+
+- **Per parameter:** s_p = (0.75 × exceedance + 0.25 × share of readings outside the limit) × hazard
+  weight ÷ largest weight, where exceedance runs from 0 (at 60 % of the limit) to 1 (at 140 %).
+- **R** = 0.7 × max s_p + 0.3 × mean s_p. It uses every reading, so a high-risk, low-trust zone keeps
+  its high R and gets a confirmation sample first.
+- **T** = mean trust of the zone's anomalous readings, or 0.9 if there were none.
+
+**The six seeded surveys use the hand-set values from the brief** (latest: A 0.9/0.9, B 0.8/0.3,
+C 0.3/0.8, D 0.1/0.9), so the demo plan matches section 10. Surveys created from missions are scored
+by `classical_v1`, which reads the same seeded data a little lower (A ≈ 0.76 for the latest survey). So
+the first new survey can show zones as "improving" partly because the method changed.
+
+**Closing the loop.** When a mission completes, it becomes a survey:
+
+1. its boat and lab readings from start to end are attached;
+2. they are scored (by the planner service, or in-app scoring if the service fails, which is logged);
+3. the new scores drive the dashboard, the "zone tier rose" alert, the next plan and the next
+   scheduled date.
+
+In demo mode the seeded mission M-0012 completes a minute or two after loading, which creates SV-007.
+
+**Provisional trust.** Live anomalous readings get a provisional T before survey scoring: 0.3 if the
+probe's edge health is not "ok", otherwise 0.88. Confirmation samples get 0.92, and station readings
+0.85.
 
 ## Alerts
 
@@ -275,6 +310,57 @@ refuses to drive out of its onboard geofence.
 battery ≥ 80 %; link OK; geofence loaded with the dock inside. A mission cannot start until it passes
 unless an admin overrides it with a reason, which is written to the audit log.
 
+## Boat gateway
+
+`gateway/` bridges an MQTT broker (boats on 4G/5G/satellite) and the database.
+
+| Topic | Direction | Payload |
+| --- | --- | --- |
+| `aquaq/boats/{id}/telemetry` | boat → server, every 2–5 s | Section 9 telemetry message (`readings`, `edge.anomaly`, `edge.sensor_health`) |
+| `aquaq/boats/{id}/samples` | boat → server | `{ts, lat, lon, kind: "confirmation" \| "manual", readings}` |
+| `aquaq/boats/{id}/events` | boat → server | `{type: "mission_status", mission_id, status}` or `{type: "waypoint", mission_id, seq, status}` |
+| `aquaq/boats/{id}/commands` | server → boat (QoS 1) | `{id, type, payload, issued_at}`; `LOAD_MISSION` carries the route |
+| `aquaq/boats/{id}/acks` | boat → server | `{id, ts, status: "acknowledged" \| "executed" \| "failed", result?}` |
+| `aquaq/stations/{id}/readings` | station → server | `{station_id, ts, readings}` |
+
+Every incoming message is validated, then written as the rows the app already reads:
+
+| From | Written to |
+| --- | --- |
+| Telemetry | `boat_telemetry` and `boats`; one `readings` row per probe (zone from the position, anomaly from the limits, provisional trust); sensor-health changes |
+| Samples | `readings` (confirmation samples flagged) |
+| Events | `missions`, `waypoints` |
+| Acks | `commands` |
+
+The gateway forwards each pending command once, and marks it `timed_out` if the boat does not
+acknowledge it within the command timeout. It needs the service-role key, so run it on a server
+you control, never in a browser.
+
+```bash
+MQTT_URL=mqtts://broker:8883 MQTT_USERNAME=… MQTT_PASSWORD=… \
+SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… BOAT_IDS=B1 npm run gateway
+# Without hardware: a boat + stations speaking the same protocol
+MQTT_URL=mqtt://localhost:1883 npm run boat-emulator
+```
+
+`gateway/gateway.test.ts` runs the emulator, the gateway and an in-process MQTT broker end to end:
+telemetry rows, command acknowledgements, a full mission, timeouts and probe drift.
+
+## Reports
+
+- **Survey report** (Reports → Open report), one per survey:
+  - summary with comparison to the previous survey;
+  - zone table (R, T, tier, change, trust gate, top driver);
+  - map with sampling points, and an R-by-zone chart against the previous survey;
+  - parameter means against limits;
+  - missions run with their solver, and alerts raised in the period.
+
+  **Export PDF** opens the print dialog with an A4 print layout; choose *Save as PDF*. The report
+  says when it shows demo data.
+- **Raw data export:** readings filtered by date range (IST), zones, parameters, sources, survey,
+  anomalies only, or low trust only. Each CSV row includes UTC and IST time, the limit and the
+  within/near/outside status. Every analytics chart also has its own CSV export.
+
 ## Limits and safety notes
 
 - Default safe limits are a starting point. Check them against the standard that applies to the water
@@ -291,5 +377,6 @@ unless an admin overrides it with a reason, which is written to the audit log.
 3. **Phase 3, missions and control** (done): mock planner (with the section 10 unit test), plan review
    and approval, command flow with acknowledgements and timeouts, emergency stop, manual mode, geofence
    validation, pre-mission checklist, maintenance tasks, zone/geofence drawing, audit log.
-4. **Phase 4, integration and reports:** real planner API and boat gateway, PDF survey reports, raw
-   CSV export page.
+4. **Phase 4, integration and reports** (done): planner service with QUBO/QAOA and the classical
+   fallback, `/score` parity, mission → survey → scores loop, MQTT boat gateway and emulator, PDF
+   survey reports, raw CSV export.

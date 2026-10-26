@@ -1,0 +1,6710 @@
+[
+ {
+  "request": {
+   "survey_id": "SV-003",
+   "zones": [
+    "A",
+    "B",
+    "C",
+    "D"
+   ],
+   "readings": [
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 7.98,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 5.36,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 28.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 7.3,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.91
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 479.3,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.82
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 363.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 124.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "hardness",
+     "value": 270.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "chlorine",
+     "value": 1.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "sulfate",
+     "value": 211.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "organic_carbon",
+     "value": 4.2,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.79
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "trihalomethanes",
+     "value": 61.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 7.95,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 4.66,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.89
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 6.5,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.89
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 485.6,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.9
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 371.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 132.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 7.89,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 4.25,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.96
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 28.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 7.2,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.85
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 502.7,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.93
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 362.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 124.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 7.82,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 5.16,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 28.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 6.6,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.88
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 482.5,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.93
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 374.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 115.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "hardness",
+     "value": 271.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "chlorine",
+     "value": 1.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "sulfate",
+     "value": 210.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "organic_carbon",
+     "value": 4.2,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.9
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "trihalomethanes",
+     "value": 60.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 7.93,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 4.73,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.85
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 7,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.88
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 495.3,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.82
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 361,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 128.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 7.94,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 4.98,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.89
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 6.8,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.81
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 496.4,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.85
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 363.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 120.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 7.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 5.17,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 6.8,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.89
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 469.8,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.91
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 367.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 128.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "hardness",
+     "value": 274.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "chlorine",
+     "value": 1.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "sulfate",
+     "value": 207.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "organic_carbon",
+     "value": 4.1,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.82
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "trihalomethanes",
+     "value": 62.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 7.96,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 4.65,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.83
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 7,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.91
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 496,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.89
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 364.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 117.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 7.95,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 5.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 6.6,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.9
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 484.9,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.92
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 368.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 135.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 7.95,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 4.87,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.9
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 6.9,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.86
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 499.1,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.87
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 371.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 124.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "hardness",
+     "value": 269.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "chlorine",
+     "value": 1.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "sulfate",
+     "value": 216.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "organic_carbon",
+     "value": 4.2,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.93
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "trihalomethanes",
+     "value": 60.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 8.03,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 4.59,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.82
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 28.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 7,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.83
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 483.2,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.89
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 353.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 127.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 7.79,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 4.82,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.89
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 28.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 6.9,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.88
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 504.6,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.89
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 367.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 106.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.72,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.15,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.3
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 368.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 270.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 166.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "hardness",
+     "value": 229,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "chlorine",
+     "value": 0.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "sulfate",
+     "value": 166.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "organic_carbon",
+     "value": 3.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "trihalomethanes",
+     "value": 47.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.72,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.21
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 351.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 268.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 175.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.32,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.25
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 384.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 267.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 180.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.73,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.16,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.23
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 354.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 261.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 182.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "hardness",
+     "value": 236.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "chlorine",
+     "value": 0.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "sulfate",
+     "value": 175.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "organic_carbon",
+     "value": 3.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "trihalomethanes",
+     "value": 50.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.63,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.38,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.26
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 367.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 260,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 169.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.76,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.6,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.29
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 349.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 260.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 173.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.63,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.28,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.22
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 362.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 270.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 166.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "hardness",
+     "value": 229.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "chlorine",
+     "value": 0.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "sulfate",
+     "value": 160.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "organic_carbon",
+     "value": 3.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "trihalomethanes",
+     "value": 47.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.62,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.63,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.25
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 366,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 269.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 175.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.63,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.79,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.24
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 368.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 289.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 169.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.67,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.5,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.19
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 348.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 259.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 179.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "hardness",
+     "value": 223.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "chlorine",
+     "value": 1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "sulfate",
+     "value": 164.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "organic_carbon",
+     "value": 3.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "trihalomethanes",
+     "value": 49.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.58,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.18,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.26
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 377.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 269.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 180.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.51,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.23
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 363.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 259.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 178.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.91,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 5.07,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 6.4,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.79
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 454.6,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.79
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 342.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 125.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "hardness",
+     "value": 271,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "chlorine",
+     "value": 1.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "sulfate",
+     "value": 198.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "organic_carbon",
+     "value": 4.1,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.79
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "trihalomethanes",
+     "value": 58.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 4.88,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.76
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 29,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 6.3,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.83
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 469.3,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.77
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 343.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 136,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.83,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 4.87,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.82
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 29,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 6.6,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.82
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 452.8,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.88
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 347.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 140.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.94,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 5.28,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 6.6,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.75
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 461.4,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.81
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 345.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 141.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "hardness",
+     "value": 267.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "chlorine",
+     "value": 1.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "sulfate",
+     "value": 203.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "organic_carbon",
+     "value": 4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "trihalomethanes",
+     "value": 58.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.89,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 4.68,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.85
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 6.3,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.82
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 453.6,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.8
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 352.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 137.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.85,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 4.86,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.78
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 29,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 6.5,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.78
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 453.9,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.83
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 354.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 142.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.91,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 4.95,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.78
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 6.2,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.76
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 466,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.78
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 352.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 148.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "hardness",
+     "value": 275.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "chlorine",
+     "value": 1.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "sulfate",
+     "value": 203.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "organic_carbon",
+     "value": 3.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "trihalomethanes",
+     "value": 59.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 4.85,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.84
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 6.3,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.82
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 474.4,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.9
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 345.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 136.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 6.6,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.78
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 454.9,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.83
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 365.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 129.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.92,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 4.58,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.76
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 6.8,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.87
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 460.2,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.79
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 353.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 138.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "hardness",
+     "value": 263.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "chlorine",
+     "value": 1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "sulfate",
+     "value": 199.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "organic_carbon",
+     "value": 4.1,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.81
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "trihalomethanes",
+     "value": 62,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 8.03,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 4.57,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.82
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 6.4,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.76
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 457.6,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.77
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 346,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 127.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.87,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 4.85,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.82
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 6.8,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.82
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 473.7,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.87
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 354.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 127.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.48,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 7.34,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 301,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 202.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 198.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "hardness",
+     "value": 207.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "chlorine",
+     "value": 0.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "sulfate",
+     "value": 129.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "organic_carbon",
+     "value": 2.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "trihalomethanes",
+     "value": 39.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.57,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 288.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 208.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 207,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.55,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.79,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 27.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 273.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 203.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 199.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.61,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.88,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 27.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 284.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 204.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 210.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "hardness",
+     "value": 189.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "chlorine",
+     "value": 0.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "sulfate",
+     "value": 134.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "organic_carbon",
+     "value": 2.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "trihalomethanes",
+     "value": 37.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.63,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.82,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 289.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 200,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 205.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.39,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.38,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 27.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 281.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 199.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 194.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.55,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.99,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 293.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 202.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 214.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "hardness",
+     "value": 197.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "chlorine",
+     "value": 0.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "sulfate",
+     "value": 140.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "organic_carbon",
+     "value": 2.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "trihalomethanes",
+     "value": 35.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.53,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.71,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 290.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 195.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 213.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.53,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.57,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 303,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 200.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 202,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.48,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.87,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 307.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 210.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 201.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "hardness",
+     "value": 200.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "chlorine",
+     "value": 0.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "sulfate",
+     "value": 136.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "organic_carbon",
+     "value": 2.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "trihalomethanes",
+     "value": 39.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.45,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.51,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 267.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 205.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 207.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.36,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.68,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 295.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 200.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 206.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    }
+   ],
+   "parameters": [
+    {
+     "id": "ph",
+     "key": "ph",
+     "name": "pH",
+     "unit": "pH units",
+     "limit_type": "range",
+     "limit_low": 6.5,
+     "limit_high": 8.5,
+     "hazard_weight": 1,
+     "enabled": true
+    },
+    {
+     "id": "do",
+     "key": "do",
+     "name": "Dissolved oxygen",
+     "unit": "mg/L",
+     "limit_type": "min",
+     "limit_low": 5,
+     "limit_high": null,
+     "hazard_weight": 1.2,
+     "enabled": true
+    },
+    {
+     "id": "temperature",
+     "key": "temperature",
+     "name": "Temperature",
+     "unit": "°C",
+     "limit_type": "none",
+     "limit_low": null,
+     "limit_high": null,
+     "hazard_weight": 0,
+     "enabled": true
+    },
+    {
+     "id": "turbidity",
+     "key": "turbidity",
+     "name": "Turbidity",
+     "unit": "NTU",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 5,
+     "hazard_weight": 1,
+     "enabled": true
+    },
+    {
+     "id": "conductivity",
+     "key": "conductivity",
+     "name": "Conductivity",
+     "unit": "µS/cm",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 400,
+     "hazard_weight": 0.8,
+     "enabled": true
+    },
+    {
+     "id": "tds",
+     "key": "tds",
+     "name": "Total dissolved solids",
+     "unit": "mg/L",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 1000,
+     "hazard_weight": 0.8,
+     "enabled": true
+    },
+    {
+     "id": "hardness",
+     "key": "hardness",
+     "name": "Hardness",
+     "unit": "mg/L",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 600,
+     "hazard_weight": 0.5,
+     "enabled": true
+    },
+    {
+     "id": "chlorine",
+     "key": "chlorine",
+     "name": "Chlorine",
+     "unit": "mg/L",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 4,
+     "hazard_weight": 0.7,
+     "enabled": true
+    },
+    {
+     "id": "sulfate",
+     "key": "sulfate",
+     "name": "Sulfate",
+     "unit": "mg/L",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 400,
+     "hazard_weight": 0.6,
+     "enabled": true
+    },
+    {
+     "id": "organic_carbon",
+     "key": "organic_carbon",
+     "name": "Organic carbon",
+     "unit": "mg/L",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 4,
+     "hazard_weight": 0.9,
+     "enabled": true
+    },
+    {
+     "id": "trihalomethanes",
+     "key": "trihalomethanes",
+     "name": "Trihalomethanes",
+     "unit": "µg/L",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 80,
+     "hazard_weight": 1,
+     "enabled": true
+    },
+    {
+     "id": "orp",
+     "key": "orp",
+     "name": "ORP",
+     "unit": "mV",
+     "limit_type": "none",
+     "limit_low": null,
+     "limit_high": null,
+     "hazard_weight": 0,
+     "enabled": true
+    }
+   ],
+   "settings": {
+    "trust_threshold": 0.5,
+    "tier_cutoffs": {
+     "medium": 0.25,
+     "high": 0.5,
+     "critical": 0.75
+    },
+    "near_limit_pct": 10
+   }
+  },
+  "expected": {
+   "survey_id": "SV-003",
+   "method": "classical_v1",
+   "zone_scores": [
+    {
+     "zone_id": "A",
+     "risk_R": 0.65,
+     "trust_T": 0.88,
+     "risk_tier": "High",
+     "top_drivers": [
+      {
+       "parameter_key": "turbidity",
+       "value": 6.883,
+       "limit": "≤ 5 NTU",
+       "contribution": 0.627
+      },
+      {
+       "parameter_key": "conductivity",
+       "value": 489.95,
+       "limit": "≤ 400 µS/cm",
+       "contribution": 0.38
+      },
+      {
+       "parameter_key": "do",
+       "value": 4.87,
+       "limit": "≥ 5 mg/L",
+       "contribution": 0.332
+      },
+      {
+       "parameter_key": "organic_carbon",
+       "value": 4.175,
+       "limit": "≤ 4 mg/L",
+       "contribution": 0.264
+      },
+      {
+       "parameter_key": "trihalomethanes",
+       "value": 61.375,
+       "limit": "≤ 80 µg/L",
+       "contribution": 0.017
+      },
+      {
+       "parameter_key": "sulfate",
+       "value": 211.4,
+       "limit": "≤ 400 mg/L",
+       "contribution": -0.133
+      },
+      {
+       "parameter_key": "hardness",
+       "value": 271.425,
+       "limit": "≤ 600 mg/L",
+       "contribution": -0.149
+      },
+      {
+       "parameter_key": "tds",
+       "value": 365.875,
+       "limit": "≤ 1000 mg/L",
+       "contribution": -0.307
+      },
+      {
+       "parameter_key": "chlorine",
+       "value": 1.125,
+       "limit": "≤ 4 mg/L",
+       "contribution": -0.328
+      },
+      {
+       "parameter_key": "ph",
+       "value": 7.916,
+       "limit": "6.5–8.5 pH units",
+       "contribution": -0.334
+      }
+     ],
+     "trust_gate": "auto_accept",
+     "trust_gate_reason": null
+    },
+    {
+     "zone_id": "B",
+     "risk_R": 0.75,
+     "trust_T": 0.24,
+     "risk_tier": "Critical",
+     "top_drivers": [
+      {
+       "parameter_key": "do",
+       "value": 3.435,
+       "limit": "≥ 5 mg/L",
+       "contribution": 0.847
+      },
+      {
+       "parameter_key": "turbidity",
+       "value": 4.633,
+       "limit": "≤ 5 NTU",
+       "contribution": 0.177
+      },
+      {
+       "parameter_key": "conductivity",
+       "value": 363.517,
+       "limit": "≤ 400 µS/cm",
+       "contribution": 0.127
+      },
+      {
+       "parameter_key": "organic_carbon",
+       "value": 3.275,
+       "limit": "≤ 4 mg/L",
+       "contribution": 0.062
+      },
+      {
+       "parameter_key": "trihalomethanes",
+       "value": 48.7,
+       "limit": "≤ 80 µg/L",
+       "contribution": -0.141
+      },
+      {
+       "parameter_key": "hardness",
+       "value": 229.7,
+       "limit": "≤ 600 mg/L",
+       "contribution": -0.184
+      },
+      {
+       "parameter_key": "sulfate",
+       "value": 166.95,
+       "limit": "≤ 400 mg/L",
+       "contribution": -0.2
+      },
+      {
+       "parameter_key": "chlorine",
+       "value": 0.925,
+       "limit": "≤ 4 mg/L",
+       "contribution": -0.363
+      },
+      {
+       "parameter_key": "tds",
+       "value": 267.217,
+       "limit": "≤ 1000 mg/L",
+       "contribution": -0.386
+      },
+      {
+       "parameter_key": "ph",
+       "value": 7.664,
+       "limit": "6.5–8.5 pH units",
+       "contribution": -0.586
+      }
+     ],
+     "trust_gate": "lab_review",
+     "trust_gate_reason": "Low agreement: trust 0.24 is below the 0.5 threshold, so the change may be a sensor fault."
+    },
+    {
+     "zone_id": "C",
+     "risk_R": 0.6,
+     "trust_T": 0.81,
+     "risk_tier": "High",
+     "top_drivers": [
+      {
+       "parameter_key": "turbidity",
+       "value": 6.483,
+       "limit": "≤ 5 NTU",
+       "contribution": 0.547
+      },
+      {
+       "parameter_key": "do",
+       "value": 4.87,
+       "limit": "≥ 5 mg/L",
+       "contribution": 0.332
+      },
+      {
+       "parameter_key": "conductivity",
+       "value": 461.033,
+       "limit": "≤ 400 µS/cm",
+       "contribution": 0.322
+      },
+      {
+       "parameter_key": "organic_carbon",
+       "value": 4,
+       "limit": "≤ 4 mg/L",
+       "contribution": 0.225
+      },
+      {
+       "parameter_key": "trihalomethanes",
+       "value": 59.625,
+       "limit": "≤ 80 µg/L",
+       "contribution": -0.005
+      },
+      {
+       "parameter_key": "sulfate",
+       "value": 201.275,
+       "limit": "≤ 400 mg/L",
+       "contribution": -0.148
+      },
+      {
+       "parameter_key": "hardness",
+       "value": 269.525,
+       "limit": "≤ 600 mg/L",
+       "contribution": -0.15
+      },
+      {
+       "parameter_key": "tds",
+       "value": 350.325,
+       "limit": "≤ 1000 mg/L",
+       "contribution": -0.32
+      },
+      {
+       "parameter_key": "chlorine",
+       "value": 1.125,
+       "limit": "≤ 4 mg/L",
+       "contribution": -0.328
+      },
+      {
+       "parameter_key": "ph",
+       "value": 7.896,
+       "limit": "6.5–8.5 pH units",
+       "contribution": -0.354
+      }
+     ],
+     "trust_gate": "auto_accept",
+     "trust_gate_reason": null
+    },
+    {
+     "zone_id": "D",
+     "risk_R": 0.1,
+     "trust_T": 0.9,
+     "risk_tier": "Low",
+     "top_drivers": [
+      {
+       "parameter_key": "do",
+       "value": 6.762,
+       "limit": "≥ 5 mg/L",
+       "contribution": -0.013
+      },
+      {
+       "parameter_key": "conductivity",
+       "value": 289.683,
+       "limit": "≤ 400 µS/cm",
+       "contribution": -0.021
+      },
+      {
+       "parameter_key": "turbidity",
+       "value": 3.392,
+       "limit": "≤ 5 NTU",
+       "contribution": -0.072
+      },
+      {
+       "parameter_key": "organic_carbon",
+       "value": 2.575,
+       "limit": "≤ 4 mg/L",
+       "contribution": -0.096
+      },
+      {
+       "parameter_key": "hardness",
+       "value": 198.8,
+       "limit": "≤ 600 mg/L",
+       "contribution": -0.209
+      },
+      {
+       "parameter_key": "sulfate",
+       "value": 135.225,
+       "limit": "≤ 400 mg/L",
+       "contribution": -0.247
+      },
+      {
+       "parameter_key": "trihalomethanes",
+       "value": 38.225,
+       "limit": "≤ 80 µg/L",
+       "contribution": -0.272
+      },
+      {
+       "parameter_key": "chlorine",
+       "value": 0.825,
+       "limit": "≤ 4 mg/L",
+       "contribution": -0.381
+      },
+      {
+       "parameter_key": "tds",
+       "value": 202.833,
+       "limit": "≤ 1000 mg/L",
+       "contribution": -0.438
+      },
+      {
+       "parameter_key": "ph",
+       "value": 7.511,
+       "limit": "6.5–8.5 pH units",
+       "contribution": -0.739
+      }
+     ],
+     "trust_gate": "auto_accept",
+     "trust_gate_reason": null
+    }
+   ]
+  }
+ },
+ {
+  "request": {
+   "survey_id": "SV-006",
+   "zones": [
+    "A",
+    "B",
+    "C",
+    "D"
+   ],
+   "readings": [
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 8.27,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 3.23,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.9
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 8.9,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.94
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 580.4,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.92
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 455.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 95.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "hardness",
+     "value": 319.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "chlorine",
+     "value": 1.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "sulfate",
+     "value": 253.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "organic_carbon",
+     "value": 5,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.91
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "trihalomethanes",
+     "value": 74.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 8.15,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 3.27,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.88
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 8.3,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.89
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 601.3,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.97
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 453.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 77.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 8.12,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 3.7,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.89
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 28.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 8.7,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.89
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 583.6,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.92
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 462.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 80.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 8.32,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 3.71,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.95
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 8.9,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.89
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 600.8,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.87
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 464.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 80.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "hardness",
+     "value": 319.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "chlorine",
+     "value": 1.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "sulfate",
+     "value": 254.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "organic_carbon",
+     "value": 5,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.9
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "trihalomethanes",
+     "value": 75.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 8.27,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 4.07,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.91
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 8.7,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.92
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 598.4,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.96
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 449.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 80.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 8.25,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 3.54,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.88
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 9,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.87
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 576.4,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.92
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 464.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 84.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 8.16,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 3.56,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.92
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 8.8,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.83
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 597.4,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.91
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 467.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 99.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "hardness",
+     "value": 298.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "chlorine",
+     "value": 1.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "sulfate",
+     "value": 259.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "organic_carbon",
+     "value": 5.1,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.98
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "trihalomethanes",
+     "value": 72.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 8.25,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 3.44,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.88
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 8.8,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.85
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 603.7,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.97
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 450.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 89.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 8.18,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 4.32,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.87
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 8.7,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.9
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 576.9,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.81
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 464.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 74.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 8.16,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 3.93,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.9
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 8.7,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.91
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 590,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.86
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 459.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 90.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "hardness",
+     "value": 311.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "chlorine",
+     "value": 1.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "sulfate",
+     "value": 250.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "organic_carbon",
+     "value": 5.3,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.97
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "trihalomethanes",
+     "value": 73,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 8.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 4.24,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.92
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 8.7,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.93
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 600.1,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.84
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 457,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 85.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "ph",
+     "value": 8.37,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "do",
+     "value": 3.78,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.85
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "temperature",
+     "value": 29.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "turbidity",
+     "value": 8.9,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.93
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "conductivity",
+     "value": 602.8,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.94
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "tds",
+     "value": 464.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "A",
+     "parameter_key": "orp",
+     "value": 69.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.62,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.25,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.24
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 27.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 382.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 263.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 166,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "hardness",
+     "value": 217.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "chlorine",
+     "value": 0.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "sulfate",
+     "value": 164.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "organic_carbon",
+     "value": 3.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "trihalomethanes",
+     "value": 46.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.74,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.83,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.24
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 366.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 265.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 186.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.58,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.34
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 363.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 265.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 168.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.75,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 2.84,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.31
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 367,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 271.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 174.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "hardness",
+     "value": 213.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "chlorine",
+     "value": 0.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "sulfate",
+     "value": 161.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "organic_carbon",
+     "value": 2.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "trihalomethanes",
+     "value": 49.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.59,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.83,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.26
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 366.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 274.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 166.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.65,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.04,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.26
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 364.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 272.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 177.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.57,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.48,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.33
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 29.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 364.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 260.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 176.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "hardness",
+     "value": 235.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "chlorine",
+     "value": 0.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "sulfate",
+     "value": 163.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "organic_carbon",
+     "value": 3.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "trihalomethanes",
+     "value": 44,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.71,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.49,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.29
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 361.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 264.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 184.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.64,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.59,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.27
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 378.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 262.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 168.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.38,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.28
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 350.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 265.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 183.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "hardness",
+     "value": 218.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "chlorine",
+     "value": 1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "sulfate",
+     "value": 171.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "organic_carbon",
+     "value": 3.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "trihalomethanes",
+     "value": 45.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.1,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.3
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 355.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 262,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 177.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "ph",
+     "value": 7.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "do",
+     "value": 3.52,
+     "edge_anomaly_flag": true,
+     "trust_T": 0.32
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "temperature",
+     "value": 28.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "turbidity",
+     "value": 4.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "conductivity",
+     "value": 370.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "tds",
+     "value": 259.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "B",
+     "parameter_key": "orp",
+     "value": 180.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.65,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 5.65,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 4.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 378.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 283.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 179.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "hardness",
+     "value": 228.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "chlorine",
+     "value": 1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "sulfate",
+     "value": 161.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "organic_carbon",
+     "value": 3.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "trihalomethanes",
+     "value": 46.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.67,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 5.88,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 4.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 367.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 262.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 173.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.62,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 5.69,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 4.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 359,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 275.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 173.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.78,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 6.21,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 4.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 366.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 265.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 167,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "hardness",
+     "value": 230.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "chlorine",
+     "value": 1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "sulfate",
+     "value": 161.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "organic_carbon",
+     "value": 3.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "trihalomethanes",
+     "value": 48.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.83,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 5.53,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 335.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 272.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 181.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.56,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 5.44,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 4.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 344.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 268.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 174,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.77,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 6.06,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 4.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 355.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 261.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 183.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "hardness",
+     "value": 228.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "chlorine",
+     "value": 1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "sulfate",
+     "value": 161.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "organic_carbon",
+     "value": 3.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "trihalomethanes",
+     "value": 49.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.65,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 5.77,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 4.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 344.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 270.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 174.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.72,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 5.71,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 4.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 365.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 271.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 181.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.59,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 6.12,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 4.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 374.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 274.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 169.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "hardness",
+     "value": 220,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "chlorine",
+     "value": 1.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "sulfate",
+     "value": 172.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "organic_carbon",
+     "value": 3.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "trihalomethanes",
+     "value": 46.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.76,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 5.93,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 4.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 371.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 272.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 176.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "ph",
+     "value": 7.73,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "do",
+     "value": 6.16,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "temperature",
+     "value": 28.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "turbidity",
+     "value": 4.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "conductivity",
+     "value": 362.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "tds",
+     "value": 251.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "C",
+     "parameter_key": "orp",
+     "value": 178,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.49,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.13,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 279,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 209.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 195.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "hardness",
+     "value": 185.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "chlorine",
+     "value": 0.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "sulfate",
+     "value": 135.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "organic_carbon",
+     "value": 2.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "trihalomethanes",
+     "value": 38.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.58,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.67,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 27.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 282,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 203.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 193.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.34,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 7.03,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 288.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 208.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 207.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.44,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.67,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 293.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 199.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 203.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "hardness",
+     "value": 203.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "chlorine",
+     "value": 0.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "sulfate",
+     "value": 131.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "organic_carbon",
+     "value": 2.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "trihalomethanes",
+     "value": 43.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.59,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.84,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 281.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 205.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 201.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.59,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.67,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 294.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 193.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 197.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.51,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.75,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 27.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 289.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 194.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 204.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "hardness",
+     "value": 193.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "chlorine",
+     "value": 0.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "sulfate",
+     "value": 132.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "organic_carbon",
+     "value": 2.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "trihalomethanes",
+     "value": 38.5,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.56,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 272.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 191.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 212.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.38,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 315.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 201.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 195,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.49,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.92,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 288,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 208,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 207.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "hardness",
+     "value": 194.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "chlorine",
+     "value": 0.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "sulfate",
+     "value": 133.4,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "organic_carbon",
+     "value": 2.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "trihalomethanes",
+     "value": 38.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.49,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 27.9,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.2,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 301.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 196.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 198.1,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "ph",
+     "value": 7.41,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "do",
+     "value": 6.66,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "temperature",
+     "value": 28.6,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "turbidity",
+     "value": 3.3,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "conductivity",
+     "value": 278.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "tds",
+     "value": 199.7,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    },
+    {
+     "zone_id": "D",
+     "parameter_key": "orp",
+     "value": 196.8,
+     "edge_anomaly_flag": false,
+     "trust_T": null
+    }
+   ],
+   "parameters": [
+    {
+     "id": "ph",
+     "key": "ph",
+     "name": "pH",
+     "unit": "pH units",
+     "limit_type": "range",
+     "limit_low": 6.5,
+     "limit_high": 8.5,
+     "hazard_weight": 1,
+     "enabled": true
+    },
+    {
+     "id": "do",
+     "key": "do",
+     "name": "Dissolved oxygen",
+     "unit": "mg/L",
+     "limit_type": "min",
+     "limit_low": 5,
+     "limit_high": null,
+     "hazard_weight": 1.2,
+     "enabled": true
+    },
+    {
+     "id": "temperature",
+     "key": "temperature",
+     "name": "Temperature",
+     "unit": "°C",
+     "limit_type": "none",
+     "limit_low": null,
+     "limit_high": null,
+     "hazard_weight": 0,
+     "enabled": true
+    },
+    {
+     "id": "turbidity",
+     "key": "turbidity",
+     "name": "Turbidity",
+     "unit": "NTU",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 5,
+     "hazard_weight": 1,
+     "enabled": true
+    },
+    {
+     "id": "conductivity",
+     "key": "conductivity",
+     "name": "Conductivity",
+     "unit": "µS/cm",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 400,
+     "hazard_weight": 0.8,
+     "enabled": true
+    },
+    {
+     "id": "tds",
+     "key": "tds",
+     "name": "Total dissolved solids",
+     "unit": "mg/L",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 1000,
+     "hazard_weight": 0.8,
+     "enabled": true
+    },
+    {
+     "id": "hardness",
+     "key": "hardness",
+     "name": "Hardness",
+     "unit": "mg/L",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 600,
+     "hazard_weight": 0.5,
+     "enabled": true
+    },
+    {
+     "id": "chlorine",
+     "key": "chlorine",
+     "name": "Chlorine",
+     "unit": "mg/L",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 4,
+     "hazard_weight": 0.7,
+     "enabled": true
+    },
+    {
+     "id": "sulfate",
+     "key": "sulfate",
+     "name": "Sulfate",
+     "unit": "mg/L",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 400,
+     "hazard_weight": 0.6,
+     "enabled": true
+    },
+    {
+     "id": "organic_carbon",
+     "key": "organic_carbon",
+     "name": "Organic carbon",
+     "unit": "mg/L",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 4,
+     "hazard_weight": 0.9,
+     "enabled": true
+    },
+    {
+     "id": "trihalomethanes",
+     "key": "trihalomethanes",
+     "name": "Trihalomethanes",
+     "unit": "µg/L",
+     "limit_type": "max",
+     "limit_low": null,
+     "limit_high": 80,
+     "hazard_weight": 1,
+     "enabled": true
+    },
+    {
+     "id": "orp",
+     "key": "orp",
+     "name": "ORP",
+     "unit": "mV",
+     "limit_type": "none",
+     "limit_low": null,
+     "limit_high": null,
+     "hazard_weight": 0,
+     "enabled": true
+    }
+   ],
+   "settings": {
+    "trust_threshold": 0.5,
+    "tier_cutoffs": {
+     "medium": 0.25,
+     "high": 0.5,
+     "critical": 0.75
+    },
+    "near_limit_pct": 10
+   }
+  },
+  "expected": {
+   "survey_id": "SV-006",
+   "method": "classical_v1",
+   "zone_scores": [
+    {
+     "zone_id": "A",
+     "risk_R": 0.76,
+     "trust_T": 0.9,
+     "risk_tier": "Critical",
+     "top_drivers": [
+      {
+       "parameter_key": "turbidity",
+       "value": 8.758,
+       "limit": "≤ 5 NTU",
+       "contribution": 1.002
+      },
+      {
+       "parameter_key": "do",
+       "value": 3.733,
+       "limit": "≥ 5 mg/L",
+       "contribution": 0.708
+      },
+      {
+       "parameter_key": "conductivity",
+       "value": 592.65,
+       "limit": "≤ 400 µS/cm",
+       "contribution": 0.585
+      },
+      {
+       "parameter_key": "organic_carbon",
+       "value": 5.1,
+       "limit": "≤ 4 mg/L",
+       "contribution": 0.472
+      },
+      {
+       "parameter_key": "trihalomethanes",
+       "value": 74.075,
+       "limit": "≤ 80 µg/L",
+       "contribution": 0.176
+      },
+      {
+       "parameter_key": "ph",
+       "value": 8.225,
+       "limit": "6.5–8.5 pH units",
+       "contribution": -0.025
+      },
+      {
+       "parameter_key": "sulfate",
+       "value": 254.55,
+       "limit": "≤ 400 mg/L",
+       "contribution": -0.068
+      },
+      {
+       "parameter_key": "hardness",
+       "value": 312.225,
+       "limit": "≤ 600 mg/L",
+       "contribution": -0.115
+      },
+      {
+       "parameter_key": "tds",
+       "value": 459.458,
+       "limit": "≤ 1000 mg/L",
+       "contribution": -0.232
+      },
+      {
+       "parameter_key": "chlorine",
+       "value": 1.325,
+       "limit": "≤ 4 mg/L",
+       "contribution": -0.293
+      }
+     ],
+     "trust_gate": "lab_review",
+     "trust_gate_reason": "Borderline decision: R 0.76 is within 0.03 of the High/Critical cut-off (0.75)."
+    },
+    {
+     "zone_id": "B",
+     "risk_R": 0.75,
+     "trust_T": 0.29,
+     "risk_tier": "Critical",
+     "top_drivers": [
+      {
+       "parameter_key": "do",
+       "value": 3.411,
+       "limit": "≥ 5 mg/L",
+       "contribution": 0.859
+      },
+      {
+       "parameter_key": "turbidity",
+       "value": 4.567,
+       "limit": "≤ 5 NTU",
+       "contribution": 0.163
+      },
+      {
+       "parameter_key": "conductivity",
+       "value": 365.95,
+       "limit": "≤ 400 µS/cm",
+       "contribution": 0.132
+      },
+      {
+       "parameter_key": "organic_carbon",
+       "value": 3.05,
+       "limit": "≤ 4 mg/L",
+       "contribution": 0.011
+      },
+      {
+       "parameter_key": "trihalomethanes",
+       "value": 46.275,
+       "limit": "≤ 80 µg/L",
+       "contribution": -0.172
+      },
+      {
+       "parameter_key": "hardness",
+       "value": 221.45,
+       "limit": "≤ 600 mg/L",
+       "contribution": -0.19
+      },
+      {
+       "parameter_key": "sulfate",
+       "value": 165.2,
+       "limit": "≤ 400 mg/L",
+       "contribution": -0.202
+      },
+      {
+       "parameter_key": "chlorine",
+       "value": 0.925,
+       "limit": "≤ 4 mg/L",
+       "contribution": -0.363
+      },
+      {
+       "parameter_key": "tds",
+       "value": 265.617,
+       "limit": "≤ 1000 mg/L",
+       "contribution": -0.388
+      },
+      {
+       "parameter_key": "ph",
+       "value": 7.664,
+       "limit": "6.5–8.5 pH units",
+       "contribution": -0.586
+      }
+     ],
+     "trust_gate": "lab_review",
+     "trust_gate_reason": "Low agreement: trust 0.29 is below the 0.5 threshold, so the change may be a sensor fault."
+    },
+    {
+     "zone_id": "C",
+     "risk_R": 0.2,
+     "trust_T": 0.9,
+     "risk_tier": "Low",
+     "top_drivers": [
+      {
+       "parameter_key": "turbidity",
+       "value": 4.642,
+       "limit": "≤ 5 NTU",
+       "contribution": 0.178
+      },
+      {
+       "parameter_key": "do",
+       "value": 5.846,
+       "limit": "≥ 5 mg/L",
+       "contribution": 0.126
+      },
+      {
+       "parameter_key": "conductivity",
+       "value": 360.542,
+       "limit": "≤ 400 µS/cm",
+       "contribution": 0.121
+      },
+      {
+       "parameter_key": "organic_carbon",
+       "value": 3.2,
+       "limit": "≤ 4 mg/L",
+       "contribution": 0.045
+      },
+      {
+       "parameter_key": "trihalomethanes",
+       "value": 47.9,
+       "limit": "≤ 80 µg/L",
+       "contribution": -0.151
+      },
+      {
+       "parameter_key": "hardness",
+       "value": 226.775,
+       "limit": "≤ 600 mg/L",
+       "contribution": -0.186
+      },
+      {
+       "parameter_key": "sulfate",
+       "value": 164.3,
+       "limit": "≤ 400 mg/L",
+       "contribution": -0.204
+      },
+      {
+       "parameter_key": "chlorine",
+       "value": 1.025,
+       "limit": "≤ 4 mg/L",
+       "contribution": -0.346
+      },
+      {
+       "parameter_key": "tds",
+       "value": 269.3,
+       "limit": "≤ 1000 mg/L",
+       "contribution": -0.385
+      },
+      {
+       "parameter_key": "ph",
+       "value": 7.694,
+       "limit": "6.5–8.5 pH units",
+       "contribution": -0.556
+      }
+     ],
+     "trust_gate": "auto_accept",
+     "trust_gate_reason": null
+    },
+    {
+     "zone_id": "D",
+     "risk_R": 0.11,
+     "trust_T": 0.9,
+     "risk_tier": "Low",
+     "top_drivers": [
+      {
+       "parameter_key": "do",
+       "value": 6.685,
+       "limit": "≥ 5 mg/L",
+       "contribution": -0.002
+      },
+      {
+       "parameter_key": "conductivity",
+       "value": 288.825,
+       "limit": "≤ 400 µS/cm",
+       "contribution": -0.022
+      },
+      {
+       "parameter_key": "organic_carbon",
+       "value": 2.575,
+       "limit": "≤ 4 mg/L",
+       "contribution": -0.096
+      },
+      {
+       "parameter_key": "turbidity",
+       "value": 3.2,
+       "limit": "≤ 5 NTU",
+       "contribution": -0.11
+      },
+      {
+       "parameter_key": "hardness",
+       "value": 193.975,
+       "limit": "≤ 600 mg/L",
+       "contribution": -0.213
+      },
+      {
+       "parameter_key": "sulfate",
+       "value": 133.35,
+       "limit": "≤ 400 mg/L",
+       "contribution": -0.25
+      },
+      {
+       "parameter_key": "trihalomethanes",
+       "value": 39.7,
+       "limit": "≤ 80 µg/L",
+       "contribution": -0.254
+      },
+      {
+       "parameter_key": "chlorine",
+       "value": 0.85,
+       "limit": "≤ 4 mg/L",
+       "contribution": -0.376
+      },
+      {
+       "parameter_key": "tds",
+       "value": 200.883,
+       "limit": "≤ 1000 mg/L",
+       "contribution": -0.439
+      },
+      {
+       "parameter_key": "ph",
+       "value": 7.507,
+       "limit": "6.5–8.5 pH units",
+       "contribution": -0.743
+      }
+     ],
+     "trust_gate": "auto_accept",
+     "trust_gate_reason": null
+    }
+   ]
+  }
+ }
+]
