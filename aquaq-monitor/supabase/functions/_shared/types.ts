@@ -153,6 +153,8 @@ export interface ZoneScore {
   computed_at: string;
 }
 
+export type MissionKind = 'scheduled' | 'early' | 'manual';
+
 export interface Mission {
   id: string;
   boat_id: string;
@@ -165,6 +167,16 @@ export interface Mission {
   approved_by: string | null;
   approved_at: string | null;
   created_at: string;
+  /** Scheduled survey, early (unscheduled) mission after a station trigger, or planned by hand. */
+  kind: MissionKind;
+  /** Planner objective (total value) of the current plan. */
+  objective: number;
+  /** Alert that led to an early mission. */
+  source_alert_id: string | null;
+  /** Free-text note shown with the plan, e.g. why the planner fell back. */
+  note: string | null;
+  started_at: string | null;
+  ended_at: string | null;
 }
 
 export interface MissionZone {
@@ -204,7 +216,8 @@ export type AlertRuleId =
   | 'geofence'
   | 'command_failed'
   | 'fallback_used'
-  | 'calibration_due';
+  | 'calibration_due'
+  | 'mission_proposed';
 
 export interface AlertRule {
   id: AlertRuleId;
@@ -249,6 +262,60 @@ export interface Alert {
   action: 'propose_early_mission' | null;
 }
 
+export type CommandType =
+  | 'LOAD_MISSION'
+  | 'START_MISSION'
+  | 'PAUSE_MISSION'
+  | 'RESUME_MISSION'
+  | 'RETURN_HOME'
+  | 'TAKE_SAMPLE'
+  | 'GOTO'
+  | 'ENTER_MANUAL'
+  | 'MANUAL_DRIVE'
+  | 'EXIT_MANUAL'
+  | 'EMERGENCY_STOP'
+  | 'CLEAR_ESTOP';
+
+export type CommandStatus = 'pending' | 'acknowledged' | 'executed' | 'failed' | 'timed_out';
+
+export interface CommandPayload {
+  mission_id?: string;
+  target?: LatLon;
+  heading_deg?: number;
+  speed_mps?: number;
+  /** Admin override of a failed pre-mission checklist. */
+  override_reason?: string;
+  /** Route sent with LOAD_MISSION. */
+  waypoints?: { seq: number; lat: number; lon: number; action: WaypointAction }[];
+}
+
+export interface Command {
+  id: string;
+  boat_id: string;
+  type: CommandType;
+  payload: CommandPayload;
+  issued_by: string;
+  issued_at: string;
+  status: CommandStatus;
+  ack_at: string | null;
+  done_at: string | null;
+  /** Why the boat failed it, or the timeout note. */
+  result: string | null;
+}
+
+export interface MaintenanceTask {
+  id: string;
+  sensor_id: string;
+  title: string;
+  notes: string;
+  assigned_to: string | null;
+  status: 'open' | 'done';
+  created_by: string;
+  created_at: string;
+  closed_by: string | null;
+  closed_at: string | null;
+}
+
 export interface AuditEntry {
   id: string;
   user_id: string;
@@ -273,6 +340,15 @@ export interface Settings {
   /** Boat within this distance of the geofence edge raises a warning. */
   geofence_warning_m: number;
   calibration_due_days: number;
+  /** Mission planning and boat control (Phase 3). */
+  energy_budget: number;
+  checklist_min_battery_pct: number;
+  command_timeout_s: number;
+  manual_max_speed_mps: number;
+  manual_idle_timeout_s: number;
+  /** Planner integration: the in-app mock, or a planner service URL. */
+  planner_mode: 'mock' | 'remote';
+  planner_url: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -287,4 +363,11 @@ export const DEFAULT_SETTINGS: Settings = {
   escalation_minutes: 15,
   geofence_warning_m: 10,
   calibration_due_days: 15,
+  energy_budget: 14,
+  checklist_min_battery_pct: 80,
+  command_timeout_s: 10,
+  manual_max_speed_mps: 1.0,
+  manual_idle_timeout_s: 120,
+  planner_mode: 'mock',
+  planner_url: '',
 };

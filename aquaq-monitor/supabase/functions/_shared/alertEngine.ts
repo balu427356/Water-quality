@@ -4,12 +4,14 @@
 
 import { distanceToEdgeM, pointInPolygon } from './geo.ts';
 import { TIER_ORDER, formatLimit, limitRatio, limitStatus, round } from './limits.ts';
+import { COMMAND_LABEL } from './commands.ts';
 import type {
   Alert,
   AlertRule,
   AlertRuleId,
   AlertSeverity,
   Boat,
+  Command,
   Mission,
   Parameter,
   Reading,
@@ -50,9 +52,10 @@ export const DEFAULT_ALERT_RULES: AlertRule[] = [
   rule('low_battery', 'Low battery', 'Boat battery below the return level; the boat returns home by itself.', 'high', 30),
   rule('link_lost', 'Link lost', 'No boat telemetry for longer than the link-loss timeout.', 'critical', 5, ['in_app', 'push', 'sms']),
   rule('geofence', 'Geofence', 'Boat within the warning distance of the geofence (warning) or outside it (critical).', 'warning', 10),
-  rule('command_failed', 'Command failed', 'A boat command times out or fails (active from Phase 3).', 'warning', 0),
+  rule('command_failed', 'Command failed', 'A boat command times out (no acknowledgement within the command timeout) or the boat reports it failed.', 'warning', 0),
   rule('fallback_used', 'Fallback used', 'The planner used the classical fallback instead of a quantum solver.', 'info', 0, ['in_app']),
-  rule('calibration_due', 'Calibration due', 'Sensor not calibrated within the calibration interval.', 'warning', 24 * 60, ['in_app', 'email']),
+  rule('calibration_due', 'Calibration due', 'Sensor not calibrated within the calibration interval, or failed the pre-mission check.', 'warning', 24 * 60, ['in_app', 'email']),
+  rule('mission_proposed', 'Mission proposed', 'A scheduled or early mission was proposed and waits for operator approval.', 'info', 0, ['in_app', 'push']),
 ];
 
 export interface PendingConfirmation {
@@ -92,6 +95,8 @@ export interface EngineContext {
   zoneScores: ZoneScore[];
   missions: Mission[];
   waterBody: WaterBody | null;
+  /** Recent boat commands (for the command-failed rule). */
+  commands?: Command[];
 }
 
 export type Candidate = Pick<
@@ -406,6 +411,25 @@ export function evaluate(ctx: EngineContext, prev: EngineMemory, readings: Readi
     }
   }
 
+  // ---- boat commands that failed or timed out (once per command)
+  for (const c of ctx.commands ?? []) {
+    if (c.status !== 'failed' && c.status !== 'timed_out') continue;
+    const key = `command_failed|${c.id}`;
+    if (memory.done[key]) continue;
+    memory.done[key] = true;
+    const label = COMMAND_LABEL[c.type] ?? c.type;
+    const timedOut = c.status === 'timed_out';
+    out.push({
+      rule_id: 'command_failed', dedup_key: `command_failed|${c.boat_id}|${c.type}`, severity: ruleSeverity(ctx, 'command_failed'), category: 'boat',
+      title: `${label} ${timedOut ? 'timed out' : 'failed'}`,
+      message: timedOut
+        ? `The boat did not acknowledge "${label}" within ${ctx.settings.command_timeout_s} s. ${c.result ?? ''}`.trim()
+        : `The boat rejected "${label}": ${c.result ?? 'no reason given'}.`,
+      suggested_action: c.type === 'EMERGENCY_STOP' ? 'Retry the emergency stop now and check the link.' : 'Check the link and the boat state, then retry from the live map.',
+      zone_id: null, source_id: c.boat_id, parameter_key: null, value: null, limit_text: null, action: null,
+    });
+  }
+
   const enabled = new Set(ctx.rules.filter((r) => r.enabled).map((r) => r.id));
   return { candidates: out.filter((c) => enabled.has(c.rule_id)), memory, sensorUpdates };
 }
@@ -499,11 +523,41 @@ export function runEngine(
   alerts: Alert[],
   readings: Reading[],
   newId: () => string,
+  /** Candidates raised outside the rule evaluation (checklist failures, mission proposals). */
+  extra: Candidate[] = [],
 ): EngineResult & { escalated: Alert[] } {
   const ev = evaluate(ctx, memory, readings);
-  const ap = applyCandidates(alerts, ev.candidates, ctx.rules, ev.memory, ctx.now, newId);
+  const enabled = new Set(ctx.rules.filter((r) => r.enabled).map((r) => r.id));
+  const ap = applyCandidates(alerts, [...ev.candidates, ...extra.filter((c) => enabled.has(c.rule_id))], ctx.rules, ev.memory, ctx.now, newId);
   const es = escalate(ap.alerts, ctx.now, ctx.settings.escalation_minutes);
   return { alerts: es.alerts, created: ap.created, merged: ap.merged, memory: ap.memory, sensorUpdates: ev.sensorUpdates, escalated: es.escalated };
+}
+
+/** Alerts for a failed pre-mission checklist: one per probe that failed its calibration check. */
+export function checklistCandidates(boatId: string, boatName: string, items: { key: string; label: string; ok: boolean; detail: string }[]): Candidate[] {
+  return items
+    .filter((i) => !i.ok && i.key.startsWith('probe:'))
+    .map((i) => ({
+      rule_id: 'calibration_due' as const,
+      dedup_key: `checklist|${i.key}`,
+      severity: 'warning' as const,
+      category: 'sensor' as const,
+      title: `Pre-mission check failed: ${i.label.replace('Probe calibration: ', '')} probe on ${boatName}`,
+      message: `${i.label}: ${i.detail}. The mission cannot start until the probe passes, unless an admin overrides the checklist with a reason.`,
+      suggested_action: 'Calibrate or clean the probe, then run the checklist again.',
+      zone_id: null, source_id: boatId, parameter_key: i.key.split('-').pop() ?? null, value: null, limit_text: null, action: null,
+    }));
+}
+
+/** Notification that a mission waits for approval. */
+export function missionProposedCandidate(m: Mission, reason: string): Candidate {
+  return {
+    rule_id: 'mission_proposed', dedup_key: `mission_proposed|${m.id}`, severity: 'info', category: 'mission',
+    title: `${m.kind === 'early' ? 'Early mission' : m.kind === 'scheduled' ? 'Scheduled survey mission' : 'Mission'} ${m.id} proposed`,
+    message: `${reason} Planned with the ${m.solver === 'mock' ? 'mock planner' : m.solver.replace('_', ' ')}: ${m.energy_planned} of ${m.energy_budget} energy units. It is not sent to the boat until an operator approves it.`,
+    suggested_action: 'Review the plan on the Missions page and approve it, or change zone levels first.',
+    zone_id: null, source_id: m.id, parameter_key: null, value: null, limit_text: null, action: null,
+  };
 }
 
 // ------------------------------------------------------------------ workflow

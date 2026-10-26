@@ -1,5 +1,14 @@
+import type { ChecklistResult } from '@shared/commands.ts';
 import type {
   Alert,
+  Command,
+  CommandPayload,
+  CommandType,
+  LatLon,
+  MaintenanceTask,
+  MissionKind,
+  Polygon,
+  SamplingLevel,
   AlertRule,
   AuditEntry,
   Boat,
@@ -47,6 +56,9 @@ export interface Snapshot {
   alertRules: AlertRule[];
   /** Users, for showing who acknowledged or resolved an alert. */
   profiles: Profile[];
+  /** Recent boat commands, newest first. */
+  commands: Command[];
+  maintenanceTasks: MaintenanceTask[];
   /** Simulator state, when a simulator is running. */
   sim: { phase: SimPhase; phase_reason: string | null; injections: SimInjections; speed_factor: number } | null;
 }
@@ -70,7 +82,9 @@ export type SimAction =
   | { action: 'drain_battery' }
   | { action: 'clear_injections' }
   | { action: 'set_speed'; speed_factor: number }
-  | { action: 'reset' };
+  | { action: 'reset' }
+  /** Demo: run the "1 day before the next survey" scheduler now instead of waiting. */
+  | { action: 'propose_scheduled_now' };
 
 export interface DataSource {
   readonly kind: 'demo' | 'supabase';
@@ -93,7 +107,25 @@ export interface DataSource {
   updateAlertRule(user: Profile, id: string, patch: Partial<AlertRule>): Promise<void>;
   /** Store or remove this device's web-push subscription for the user. */
   savePushSubscription(user: Profile, sub: PushSubscriptionJSON, enabled: boolean): Promise<void>;
+
+  // ---- missions and boat control (Phase 3)
+  /** Ask the planner for a plan; it is stored as a proposed mission and never sent automatically. */
+  planMission(user: Profile, input: { kind: MissionKind; energy_budget: number; source_alert_id?: string | null }): Promise<string>;
+  setMissionZoneLevel(user: Profile, missionId: string, zoneId: string, level: SamplingLevel): Promise<void>;
+  /** Approve a proposed plan and send it to the boat (LOAD_MISSION). */
+  approveMission(user: Profile, missionId: string): Promise<void>;
+  discardMission(user: Profile, missionId: string): Promise<void>;
+  /** Validated on the server side; throws with the reason if rejected. */
+  issueCommand(user: Profile, type: CommandType, payload?: CommandPayload): Promise<Command>;
+
+  createMaintenanceTask(user: Profile, t: { sensor_id: string; title: string; notes: string; assigned_to: string | null }): Promise<void>;
+  closeMaintenanceTask(user: Profile, id: string, calibrated: boolean): Promise<void>;
+  updateWaterBody(user: Profile, patch: { geofence?: Polygon; home_point?: LatLon; boundary?: Polygon }): Promise<void>;
+  updateZonePolygon(user: Profile, zoneId: string, polygon: Polygon): Promise<void>;
 }
+
+/** Error thrown when START_MISSION is rejected because the checklist failed. */
+export type CommandError = Error & { checklist?: ChecklistResult };
 
 export const TRAIL_WINDOW_MS = 30 * 60_000;
 
@@ -118,6 +150,8 @@ export function emptySnapshot(settings: Settings): Snapshot {
     alerts: [],
     alertRules: [],
     profiles: [],
+    commands: [],
+    maintenanceTasks: [],
     sim: null,
   };
 }

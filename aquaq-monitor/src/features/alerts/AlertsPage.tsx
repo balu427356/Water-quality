@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Bell, BellOff, Repeat, Rocket } from 'lucide-react';
 import type { Alert, AlertCategory, AlertSeverity, AlertStatus } from '@shared/types.ts';
 import { canOperate, useData, useSnapshot, useUser } from '@/data/DataProvider';
@@ -139,6 +139,8 @@ export function AlertCard({ alert: a, highlighted, compact }: { alert: Alert; hi
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const zone = snap.zones.find((z) => z.id === a.zone_id);
+  const nav = useNavigate();
+  const earlyMission = snap.missions.find((m) => m.source_alert_id === a.id && m.status !== 'aborted');
   const who = (id: string | null) => snap.profiles.find((p) => p.id === id)?.full_name ?? id ?? '';
   const staff = canOperate(user);
 
@@ -263,6 +265,26 @@ export function AlertCard({ alert: a, highlighted, compact }: { alert: Alert; hi
             </form>
           ) : (
             <div className="flex flex-wrap gap-2">
+              {a.action === 'propose_early_mission' &&
+                (earlyMission ? (
+                  <Button size="sm" variant="secondary" onClick={() => nav(`/missions?id=${earlyMission.id}`)}>
+                    <Rocket className="h-4 w-4" aria-hidden /> View early mission {earlyMission.id}
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={busy}
+                    onClick={() =>
+                      act(async () => {
+                        const id = await source.planMission(user, { kind: 'early', energy_budget: snap.settings.energy_budget, source_alert_id: a.id });
+                        nav(`/missions?id=${id}`);
+                      })
+                    }
+                  >
+                    <Rocket className="h-4 w-4" aria-hidden /> Plan early mission
+                  </Button>
+                ))}
               {a.status === 'open' && (
                 <Button size="sm" disabled={busy} onClick={() => act(() => source.acknowledgeAlert(user, a.id))}>
                   Acknowledge

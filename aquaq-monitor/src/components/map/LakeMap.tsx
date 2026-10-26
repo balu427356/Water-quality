@@ -1,9 +1,10 @@
 import { useEffect, useMemo, type ReactNode } from 'react';
-import { Circle, CircleMarker, MapContainer, Marker, Polygon, Polyline, TileLayer, Tooltip, useMap } from 'react-leaflet';
+import { Circle, CircleMarker, MapContainer, Marker, Polygon, Polyline, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { limitRatio, limitStatus } from '@shared/limits.ts';
-import type { LatLon, Parameter, Reading, RiskTier, Zone } from '@shared/types.ts';
+import type { LatLon, Parameter, Reading, RiskTier, Waypoint, Zone } from '@shared/types.ts';
+import { distanceM } from '@shared/geo.ts';
 import type { Snapshot } from '@/data/source';
 import { TIER_COLOR } from '@/components/status';
 import { fmtDateTime } from '@/lib/time';
@@ -43,7 +44,16 @@ interface Props {
   focusZone?: Zone;
   interactive?: boolean;
   onZoneClick?: (zoneId: string) => void;
+  /** Show this mission's route instead of the boat's current one. */
+  routeMissionId?: string;
+  /** Map clicks (go-to point, drawing). Zone clicks are suppressed while this is set. */
+  onMapClick?: (p: LatLon) => void;
   children?: ReactNode;
+}
+
+function ClickCapture({ onClick }: { onClick: (p: LatLon) => void }) {
+  useMapEvents({ click: (e) => onClick([e.latlng.lat, e.latlng.lng]) });
+  return null;
 }
 
 function FitBounds({ points }: { points: LatLon[] }) {
@@ -148,13 +158,29 @@ export function estimateSource(readings: Reading[], params: Parameter[], thresho
   return best ? { pos: [best.r.lat, best.r.lon], reading: best.r } : null;
 }
 
+/**
+ * Numbered markers for waypoints, except ones within 30 m of an already-labelled waypoint
+ * (dense hotspot transects), which are drawn as small dots. The current, first and last
+ * waypoints are always labelled.
+ */
+function labelledWaypoints(wps: Waypoint[], currentSeq: number | null): { w: Waypoint; label: boolean }[] {
+  const labelled: LatLon[] = [];
+  return wps.map((w, i) => {
+    const p: LatLon = [w.lat, w.lon];
+    const must = w.seq === currentSeq || i === 0 || i === wps.length - 1 || w.action === 'confirm_sample';
+    const label = must || labelled.every((q) => distanceM(p, q) >= 30);
+    if (label) labelled.push(p);
+    return { w, label };
+  });
+}
+
 function heatColor(status: string, ratio: number | null): string {
   if (status === 'out') return ratio != null && ratio > 1.5 ? '#991b1b' : '#dc2626';
   if (status === 'near') return '#f59e0b';
   return '#22c55e';
 }
 
-export function LakeMap({ snap, tiers, layers: layerProp, sampleReadings = [], heatParam, className, focusZone, interactive = true, onZoneClick, children }: Props) {
+export function LakeMap({ snap, tiers, layers: layerProp, sampleReadings = [], heatParam, className, focusZone, interactive = true, onZoneClick, routeMissionId, onMapClick, children }: Props) {
   const layers = { ...DEFAULT_LAYERS, ...layerProp };
   const wb = snap.waterBody;
   const boat = snap.boats[0];
@@ -172,8 +198,10 @@ export function LakeMap({ snap, tiers, layers: layerProp, sampleReadings = [], h
 
   if (!wb) return null;
   const fit = focusZone ? focusZone.polygon : wb.boundary;
-  const missionWps = snap.waypoints.filter((w) => w.mission_id === boat?.mission_id);
-  const currentSeq = boat?.waypoint_seq ?? null;
+  const routeId = routeMissionId ?? boat?.mission_id ?? snap.missions.find((m) => m.status === 'sent')?.id;
+  const routeIsActive = !!routeId && routeId === boat?.mission_id;
+  const missionWps = snap.waypoints.filter((w) => w.mission_id === routeId).sort((a, b) => a.seq - b.seq);
+  const currentSeq = routeIsActive ? boat?.waypoint_seq ?? null : null;
 
   return (
     <MapContainer
@@ -190,7 +218,8 @@ export function LakeMap({ snap, tiers, layers: layerProp, sampleReadings = [], h
       <FitBounds points={fit} />
       <AutoResize />
 
-      <Polygon positions={wb.boundary} pathOptions={{ color: '#0369a1', weight: 2, fillColor: '#7dd3fc', fillOpacity: layers.zones ? 0 : 0.25 }} />
+      <Polygon positions={wb.boundary} interactive={!onMapClick} pathOptions={{ color: '#0369a1', weight: 2, fillColor: '#7dd3fc', fillOpacity: layers.zones ? 0 : 0.25 }} />
+      {onMapClick && <ClickCapture onClick={onMapClick} />}
 
       {layers.zones &&
         snap.zones.map((z) => {
@@ -201,7 +230,8 @@ export function LakeMap({ snap, tiers, layers: layerProp, sampleReadings = [], h
               key={z.id}
               positions={z.polygon}
               pathOptions={{ color, weight: focusZone?.id === z.id ? 3 : 1.5, fillColor: color, fillOpacity: focusZone && focusZone.id !== z.id ? 0.08 : 0.28 }}
-              eventHandlers={onZoneClick ? { click: () => onZoneClick(z.id) } : undefined}
+              interactive={!onMapClick}
+              eventHandlers={onZoneClick && !onMapClick ? { click: () => onZoneClick(z.id) } : undefined}
             >
               <Tooltip sticky>
                 Zone {z.code}: {z.name} · {tier ?? 'no score'}
@@ -211,7 +241,7 @@ export function LakeMap({ snap, tiers, layers: layerProp, sampleReadings = [], h
         })}
 
       {layers.geofence && (
-        <Polygon positions={wb.geofence} pathOptions={{ color: '#dc2626', weight: 2, dashArray: '8 6', fill: false }}>
+        <Polygon positions={wb.geofence} interactive={!onMapClick} pathOptions={{ color: '#dc2626', weight: 2, dashArray: '8 6', fill: false }}>
           <Tooltip sticky>Geofence</Tooltip>
         </Polygon>
       )}
@@ -270,15 +300,28 @@ export function LakeMap({ snap, tiers, layers: layerProp, sampleReadings = [], h
 
       {layers.route && missionWps.length > 0 && (
         <>
-          <Polyline positions={[boat.position, ...missionWps.filter((w) => w.seq >= (currentSeq ?? Infinity)).map((w) => [w.lat, w.lon] as LatLon)]} pathOptions={{ color: '#0e7490', weight: 2, dashArray: '4 6' }} />
-          <Polyline positions={missionWps.map((w) => [w.lat, w.lon] as LatLon)} pathOptions={{ color: '#475569', weight: 1, opacity: 0.6 }} />
-          {missionWps.map((w) => (
-            <Marker key={`wp-${w.seq}`} position={[w.lat, w.lon]} icon={waypointIcon(w.seq, w.action, w.status === 'reached', w.seq === currentSeq)}>
-              <Tooltip>
-                Waypoint {w.seq}: {w.action.replace('_', ' ')} ({w.status})
-              </Tooltip>
-            </Marker>
-          ))}
+          {routeIsActive && (
+            <Polyline positions={[boat.position, ...missionWps.filter((w) => w.seq >= (currentSeq ?? Infinity)).map((w) => [w.lat, w.lon] as LatLon)]} pathOptions={{ color: '#0e7490', weight: 2, dashArray: '4 6' }} />
+          )}
+          <Polyline
+            positions={[...(routeIsActive ? [] : [wb.home_point]), ...missionWps.map((w) => [w.lat, w.lon] as LatLon)]}
+            pathOptions={{ color: routeIsActive ? '#475569' : '#0e7490', weight: routeIsActive ? 1 : 2, opacity: routeIsActive ? 0.6 : 0.9, dashArray: routeIsActive ? undefined : '6 4' }}
+          />
+          {labelledWaypoints(missionWps, currentSeq).map(({ w, label }) =>
+            label ? (
+              <Marker key={`wp-${w.seq}`} position={[w.lat, w.lon]} icon={waypointIcon(w.seq, w.action, w.status === 'reached', w.seq === currentSeq)}>
+                <Tooltip>
+                  Waypoint {w.seq}: {w.action.replace('_', ' ')} ({w.status})
+                </Tooltip>
+              </Marker>
+            ) : (
+              <CircleMarker key={`wp-${w.seq}`} center={[w.lat, w.lon]} radius={2.5} pathOptions={{ color: w.action === 'confirm_sample' ? SAMPLE_COLORS.confirm : SAMPLE_COLORS.sampling, weight: 1.5, fillOpacity: w.status === 'reached' ? 1 : 0 }}>
+                <Tooltip>
+                  Waypoint {w.seq}: {w.action.replace('_', ' ')} ({w.status})
+                </Tooltip>
+              </CircleMarker>
+            ),
+          )}
         </>
       )}
 

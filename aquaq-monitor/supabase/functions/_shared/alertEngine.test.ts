@@ -3,6 +3,7 @@ import {
   DEFAULT_ALERT_RULES,
   FAULT_STREAK_FOR_MAINTENANCE,
   acknowledge,
+  checklistCandidates,
   emptyMemory,
   escalate,
   resolve,
@@ -292,5 +293,37 @@ describe('alert engine: noise control and escalation', () => {
       () => 'id',
     );
     expect(res.created).toHaveLength(0);
+  });
+});
+
+describe('alert engine: commands and checklist (Phase 3)', () => {
+  it('raises one command-failed alert per failed or timed-out command', () => {
+    const base = { boat_id: 'B1', payload: {}, issued_by: 'u', issued_at: iso, ack_at: null, done_at: null };
+    const ctx: EngineContext = {
+      now: T0, settings: DEFAULT_SETTINGS, rules: DEFAULT_ALERT_RULES, parameters: [], zones: [], stations: [], sensors: [], boats: [],
+      surveys: [], zoneScores: [], missions: [], waterBody: null,
+      commands: [
+        { ...base, id: 'c1', type: 'GOTO', status: 'timed_out', result: null },
+        { ...base, id: 'c2', type: 'START_MISSION', status: 'failed', result: 'That mission is not loaded on the boat.' },
+        { ...base, id: 'c3', type: 'TAKE_SAMPLE', status: 'executed', result: null },
+      ],
+    };
+    let n = 0;
+    const r1 = runEngine(ctx, emptyMemory(), [], [], () => `A${++n}`);
+    expect(r1.created.map((a) => a.title).sort()).toEqual(['Go to point timed out', 'Start mission failed']);
+    expect(r1.created.every((a) => a.severity === 'warning' && a.rule_id === 'command_failed')).toBe(true);
+    const r2 = runEngine(ctx, r1.memory, r1.alerts, [], () => `A${++n}`);
+    expect(r2.created).toHaveLength(0);
+    expect(r2.merged).toHaveLength(0);
+  });
+
+  it('turns failed checklist probes into calibration alerts', () => {
+    const c = checklistCandidates('B1', 'AquaQ-1', [
+      { key: 'probe:B1-do', label: 'Probe calibration: Dissolved oxygen', ok: false, detail: 'calibrated 20 days ago (limit 15)' },
+      { key: 'battery', label: 'Battery ≥ 80%', ok: false, detail: '70%' },
+    ]);
+    expect(c).toHaveLength(1);
+    expect(c[0].title).toBe('Pre-mission check failed: Dissolved oxygen probe on AquaQ-1');
+    expect(c[0].rule_id).toBe('calibration_due');
   });
 });

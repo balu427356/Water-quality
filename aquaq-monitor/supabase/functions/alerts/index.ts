@@ -7,7 +7,9 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import webpush from 'npm:web-push@3.6.7';
 import { emptyMemory, runEngine, type EngineMemory } from '../_shared/alertEngine.ts';
-import { DEFAULT_SETTINGS, type Alert, type AlertRule, type Settings } from '../_shared/types.ts';
+import { DEFAULT_SETTINGS, type Alert, type AlertRule, type Command, type Settings } from '../_shared/types.ts';
+import { scheduledProposalNeeded } from '../_shared/planner.ts';
+import { planAndStore } from '../_server/ops.ts';
 
 const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -41,10 +43,11 @@ async function evaluate() {
     all('surveys'), all('zone_scores'), all('missions'), all('water_bodies'),
     all<Alert>('alerts', (q) => q.neq('status', 'resolved')),
   ]);
+  const commands = await all<Command>('commands', (q) => q.gte('issued_at', new Date(now - 3_600_000).toISOString()));
   const settings: Settings = { ...DEFAULT_SETTINGS, ...((settingsRow.data?.value as Partial<Settings>) ?? {}) };
 
   const res = runEngine(
-    { now, settings, rules, parameters, zones, stations, sensors, boats, surveys, zoneScores, missions, waterBody: wbs[0] ?? null } as any,
+    { now, settings, rules, parameters, zones, stations, sensors, boats, surveys, zoneScores, missions, waterBody: wbs[0] ?? null, commands } as any,
     memory,
     open,
     readings,
@@ -66,10 +69,20 @@ async function evaluate() {
   const newCursor = readings.length ? readings[readings.length - 1].inserted_at : cursor;
   await db.from('engine_state').upsert({ id: 1, memory: res.memory, cursor: newCursor, updated_at: new Date(now).toISOString() });
 
+  // Scheduler: one day before the next scheduled survey, propose a mission and notify operators.
+  let proposed: string | null = null;
+  if (scheduledProposalNeeded(now, surveys as any, missions as any, settings) != null) {
+    try {
+      proposed = (await planAndStore(db, null, { kind: 'scheduled', energy_budget: settings.energy_budget, why: 'The next scheduled survey is due in about a day.' })).id;
+    } catch (e) {
+      console.error('scheduled proposal failed', e);
+    }
+  }
+
   // Escalations go to operators and admins only; new alerts follow the rule's channels.
   const escalatedNew = res.escalated.filter((e) => !res.created.some((c) => c.id === e.id));
   const sent = await dispatch(rules, res.created, escalatedNew);
-  return { readings: readings.length, created: res.created.length, merged: res.merged.length, escalated: escalatedNew.length, sent };
+  return { readings: readings.length, created: res.created.length, merged: res.merged.length, escalated: escalatedNew.length, sent, proposed };
 }
 
 async function dispatch(rules: AlertRule[], created: Alert[], escalated: Alert[]) {

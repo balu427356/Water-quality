@@ -218,7 +218,7 @@ export function demoMission(nowIso: string): { mission: Mission; zones: MissionZ
     mission: {
       id: DEMO_MISSION_ID,
       boat_id: BOAT_ID,
-      name: 'Survey patrol (demo, repeats)',
+      name: 'Survey patrol (demo)',
       created_by: 'planner',
       solver: 'mock',
       energy_budget: 14,
@@ -227,6 +227,12 @@ export function demoMission(nowIso: string): { mission: Mission; zones: MissionZ
       approved_by: 'operator@aquaq.demo',
       approved_at: nowIso,
       created_at: nowIso,
+      kind: 'scheduled',
+      objective: 2.69,
+      source_alert_id: null,
+      note: 'Seeded demo mission, already approved and running when the demo starts.',
+      started_at: nowIso,
+      ended_at: null,
     },
     zones: DEMO_PLAN.map((z) => ({
       mission_id: DEMO_MISSION_ID,

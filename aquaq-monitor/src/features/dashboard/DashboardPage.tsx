@@ -26,6 +26,7 @@ export function DashboardPage() {
   const tiers = Object.fromEntries(summaries.map((s) => [s.zone.id, s.score?.risk_tier])) as Record<string, RiskTier | undefined>;
   const boat = snap.boats[0];
   const mission = activeMission(snap);
+  const proposed = snap.missions.filter((m) => m.status === 'proposed').length;
   const latest = latestPerParameter(snap);
   const next = nextSurveyAt(snap);
   const survey = latestSurvey(snap);
@@ -86,7 +87,12 @@ export function DashboardPage() {
             </div>
           </StaleDim>
           <Freshness ts={boat?.last_seen} />
-          {mission && <p className="truncate text-xs text-muted-foreground">Mission {mission.id}</p>}
+          {mission && <p className="truncate text-xs text-muted-foreground">Mission {mission.id} · {mission.status}</p>}
+          {proposed > 0 && (
+            <Link to="/missions" className="text-xs font-medium text-primary hover:underline">
+              {proposed} plan{proposed > 1 ? 's' : ''} waiting for approval
+            </Link>
+          )}
         </StatusCard>
 
         <StatusCard icon={Radio} title="Fixed stations">

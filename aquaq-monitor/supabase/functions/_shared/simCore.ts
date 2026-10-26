@@ -7,7 +7,11 @@ import { limitStatus, round } from './limits.ts';
 import type {
   Boat,
   BoatTelemetry,
+  Command,
+  CommandStatus,
+  CommandType,
   LatLon,
+  MissionStatus,
   Parameter,
   Reading,
   Sensor,
@@ -35,14 +39,15 @@ export interface SimInjections {
   link_down_until: number | null;
 }
 
-export type SimPhase = 'mission' | 'returning' | 'charging' | 'idle' | 'stopped';
+export type SimPhase = 'mission' | 'paused' | 'goto' | 'manual' | 'returning' | 'charging' | 'idle' | 'stopped';
 
 export interface SimState {
   boat: Boat;
+  /** Route of the active mission. */
   waypoints: Waypoint[];
   target_idx: number;
   phase: SimPhase;
-  /** Why the boat is returning/idle, shown in the boat panel. */
+  /** Why the boat is returning/idle/holding, shown in the boat panel. */
   phase_reason: string | null;
   link_down_since: number | null;
   last_station_at: number;
@@ -51,6 +56,10 @@ export interface SimState {
   speed_factor: number;
   /** Cumulative distance travelled, for battery accounting. */
   odometer_m: number;
+  /** Mission received with LOAD_MISSION and not yet started. */
+  loaded: { mission_id: string; waypoints: Waypoint[] } | null;
+  goto_target: LatLon | null;
+  manual: { heading_deg: number; speed_mps: number; last_input_at: number } | null;
 }
 
 export interface SimWorld {
@@ -64,12 +73,32 @@ export interface SimWorld {
 
 export type SimEvent =
   | { type: 'waypoint_reached'; seq: number }
-  | { type: 'mission_loop_completed' }
+  | { type: 'mission_completed'; mission_id: string }
   | { type: 'low_battery_return'; battery_pct: number }
   | { type: 'docked' }
   | { type: 'link_lost' }
   | { type: 'link_restored' }
-  | { type: 'failsafe_hold' };
+  | { type: 'failsafe_hold' }
+  | { type: 'goto_reached' }
+  | { type: 'geofence_hold' }
+  | { type: 'manual_timeout' }
+  | { type: 'sample_taken' };
+
+export interface CommandUpdate {
+  id: string;
+  status: CommandStatus;
+  ack_at?: string;
+  done_at?: string;
+  result?: string;
+}
+
+export interface MissionUpdate {
+  mission_id: string;
+  status: MissionStatus;
+  started_at?: string;
+  ended_at?: string;
+  note?: string;
+}
 
 export interface StepResult {
   state: SimState;
@@ -77,20 +106,30 @@ export interface StepResult {
   readings: Reading[];
   sensorHealth: { id: string; health: Sensor['health'] }[];
   events: SimEvent[];
+  commandUpdates: CommandUpdate[];
+  missionUpdates: MissionUpdate[];
 }
+
+/** Manual drive commands keep the boat moving this long; then it stops (deadman). */
+export const MANUAL_DEADMAN_S = 4;
+/** Commands executed in the same tick they are acknowledged. */
+const IMMEDIATE: CommandType[] = ['EMERGENCY_STOP', 'MANUAL_DRIVE'];
 
 export function initialSimState(boat: Boat, waypoints: Waypoint[], now: number): SimState {
   return {
     boat: { ...boat },
     waypoints: waypoints.map((w) => ({ ...w })),
     target_idx: 0,
-    phase: 'mission',
+    phase: waypoints.length ? 'mission' : 'idle',
     phase_reason: null,
     link_down_since: null,
     last_station_at: now,
     injections: { drift: null, plume: null, link_down_until: null },
     speed_factor: 1,
     odometer_m: 0,
+    loaded: null,
+    goto_target: null,
+    manual: null,
   };
 }
 
@@ -125,18 +164,25 @@ const newId = (prefix: string, now: number) => `${prefix}-${now.toString(36)}-${
 /**
  * Advance the simulation by one telemetry interval.
  * `now` is wall-clock milliseconds; simulated time advances by TELEMETRY_INTERVAL_S × speed_factor.
+ * `commands` are this boat's unfinished commands; the boat acknowledges pending ones and
+ * executes acknowledged ones (emergency stop and manual drive in the same tick).
  */
-export function stepSim(prev: SimState, world: SimWorld, now: number, rng: () => number): StepResult {
+export function stepSim(prev: SimState, world: SimWorld, now: number, rng: () => number, commands: Command[] = []): StepResult {
   const s: SimState = {
     ...prev,
     boat: { ...prev.boat },
     waypoints: prev.waypoints.map((w) => ({ ...w })),
     injections: { ...prev.injections },
+    manual: prev.manual ? { ...prev.manual } : null,
   };
   const events: SimEvent[] = [];
+  const commandUpdates: CommandUpdate[] = [];
+  const missionUpdates: MissionUpdate[] = [];
   const dt = TELEMETRY_INTERVAL_S * s.speed_factor;
   const b = s.boat;
   const settings = world.settings;
+  const nowIso = new Date(now).toISOString();
+  const sampleAt: LatLon[] = [];
 
   // ---- link state
   const linkDown = s.injections.link_down_until != null && now < s.injections.link_down_until;
@@ -152,23 +198,64 @@ export function stepSim(prev: SimState, world: SimWorld, now: number, rng: () =>
   const failsafeHold = linkDown && s.link_down_since != null && (now - s.link_down_since) / 1000 > settings.link_loss_timeout_s;
   if (failsafeHold && prev.boat.speed_mps > 0) events.push({ type: 'failsafe_hold' });
 
+  // ---- commands (only reach the boat while the link is up)
+  if (!linkDown) {
+    const mine = commands.filter((c) => c.boat_id === b.id && (c.status === 'pending' || c.status === 'acknowledged'));
+    mine.sort((x, y) => (x.issued_at < y.issued_at ? -1 : 1));
+    for (const c of mine) {
+      const upd: CommandUpdate = { id: c.id, status: c.status };
+      if (c.status === 'pending') {
+        upd.status = 'acknowledged';
+        upd.ack_at = nowIso;
+      }
+      if (c.status === 'acknowledged' || IMMEDIATE.includes(c.type)) {
+        const r = execute(s, c, world, now, missionUpdates, sampleAt);
+        upd.status = r.ok ? 'executed' : 'failed';
+        upd.done_at = nowIso;
+        upd.result = r.result;
+      }
+      commandUpdates.push(upd);
+    }
+  }
+
   // ---- onboard low-battery failsafe
-  if (b.battery_pct < settings.low_battery_return_pct && (s.phase === 'mission' || s.phase === 'idle')) {
+  const atHome = distanceM(b.position, world.waterBody.home_point) < 5;
+  const lowBattery = b.battery_pct < settings.low_battery_return_pct;
+  if (lowBattery && (['mission', 'paused', 'goto', 'manual'].includes(s.phase) || (s.phase === 'idle' && !atHome))) {
+    if (s.phase === 'mission' || s.phase === 'paused') endMission(s, 'aborted', nowIso, missionUpdates, 'Low battery: onboard failsafe returned the boat to the dock.');
     s.phase = 'returning';
+    s.manual = null;
+    s.goto_target = null;
     s.phase_reason = `Battery below ${settings.low_battery_return_pct}%: onboard failsafe returning to dock`;
     events.push({ type: 'low_battery_return', battery_pct: b.battery_pct });
+  }
+
+  // ---- manual-mode timeouts
+  if (s.phase === 'manual' && s.manual) {
+    const idle = (now - s.manual.last_input_at) / 1000;
+    if (idle > settings.manual_idle_timeout_s) {
+      s.phase = 'idle';
+      s.manual = null;
+      s.phase_reason = `Left manual mode after ${Math.round(settings.manual_idle_timeout_s / 60)} min without input; holding position.`;
+      events.push({ type: 'manual_timeout' });
+    }
   }
 
   // ---- movement
   let travelled = 0;
   const confirmAt: LatLon[] = [];
-  if (!failsafeHold && (s.phase === 'mission' || s.phase === 'returning')) {
+  const moving = !failsafeHold && (s.phase === 'mission' || s.phase === 'returning' || s.phase === 'goto');
+  if (moving) {
     let budget = CRUISE_SPEED_MPS * dt;
     while (budget > 0) {
       const target: LatLon =
-        s.phase === 'mission' ? [s.waypoints[s.target_idx].lat, s.waypoints[s.target_idx].lon] : world.waterBody.home_point;
+        s.phase === 'mission'
+          ? [s.waypoints[s.target_idx].lat, s.waypoints[s.target_idx].lon]
+          : s.phase === 'goto'
+            ? s.goto_target!
+            : world.waterBody.home_point;
       const d = distanceM(b.position, target);
-      b.heading_deg = round(bearingDeg(b.position, target), 0);
+      if (d > 0.01) b.heading_deg = round(bearingDeg(b.position, target), 0);
       if (d > budget) {
         b.position = moveM(b.position, b.heading_deg, budget);
         travelled += budget;
@@ -184,6 +271,13 @@ export function stepSim(prev: SimState, world: SimWorld, now: number, rng: () =>
         events.push({ type: 'docked' });
         break;
       }
+      if (s.phase === 'goto') {
+        s.phase = 'idle';
+        s.goto_target = null;
+        s.phase_reason = 'Holding at the go-to point.';
+        events.push({ type: 'goto_reached' });
+        break;
+      }
       const wp = s.waypoints[s.target_idx];
       wp.status = 'reached';
       events.push({ type: 'waypoint_reached', seq: wp.seq });
@@ -191,47 +285,55 @@ export function stepSim(prev: SimState, world: SimWorld, now: number, rng: () =>
       if (s.target_idx < s.waypoints.length - 1) {
         s.target_idx += 1;
       } else {
-        events.push({ type: 'mission_loop_completed' });
-        if (b.battery_pct < 60) {
-          s.phase = 'charging';
-          s.phase_reason = 'Patrol loop complete: charging at dock before the next loop';
-          break;
-        }
-        restartLoop(s);
+        const id = b.mission_id;
+        endMission(s, 'completed', nowIso, missionUpdates, null);
+        if (id) events.push({ type: 'mission_completed', mission_id: id });
+        s.phase = distanceM(b.position, world.waterBody.home_point) < 5 ? 'charging' : 'idle';
+        s.phase_reason = 'Mission complete.';
+        break;
+      }
+    }
+  } else if (s.phase === 'manual' && s.manual && !failsafeHold) {
+    const active = (now - s.manual.last_input_at) / 1000 <= MANUAL_DEADMAN_S;
+    const speed = active ? Math.min(s.manual.speed_mps, settings.manual_max_speed_mps) : 0;
+    if (speed > 0) {
+      b.heading_deg = s.manual.heading_deg;
+      const next = moveM(b.position, s.manual.heading_deg, speed * dt);
+      // Onboard geofence: the boat refuses to leave it, whatever the app sends.
+      if (pointInPolygon(next, world.waterBody.geofence)) {
+        b.position = next;
+        travelled = speed * dt;
+      } else {
+        s.manual.speed_mps = 0;
+        events.push({ type: 'geofence_hold' });
       }
     }
   }
   s.odometer_m += travelled;
-  b.speed_mps = travelled > 0 ? round(CRUISE_SPEED_MPS * (travelled / (CRUISE_SPEED_MPS * dt)), 2) : 0;
+  b.speed_mps = round(travelled / dt, 2);
 
-  // ---- battery
+  // ---- battery: drain with distance, charge at the dock
   b.battery_pct -= (travelled / 100) * BATTERY_PCT_PER_100M + 0.0008 * dt;
-  if (s.phase === 'charging') {
-    b.battery_pct += CHARGE_PCT_PER_S * dt;
-    const lowBatteryStop = (s.phase_reason ?? '').startsWith('Battery below');
-    if (b.battery_pct >= 95) {
-      b.battery_pct = 95;
-      if (lowBatteryStop) {
-        s.phase = 'idle';
-        s.phase_reason = 'Charged after a low-battery return. Waiting for an operator to resume (Phase 3 controls).';
-      } else {
-        restartLoop(s);
-      }
+  const docked = distanceM(b.position, world.waterBody.home_point) < 5;
+  if (s.phase === 'charging' || (s.phase === 'idle' && docked)) {
+    if (b.battery_pct < 95) b.battery_pct = Math.min(95, b.battery_pct + CHARGE_PCT_PER_S * dt);
+    else if (s.phase === 'charging') {
+      s.phase = 'idle';
+      s.phase_reason = 'Charged at the dock. Ready for the next mission.';
     }
   }
   // Keep full precision in state: per-tick drain is far below the 0.1 % display resolution.
   b.battery_pct = Math.max(0, Math.min(100, b.battery_pct));
 
-  b.mode =
-    s.phase === 'mission' ? 'AUTO' : s.phase === 'returning' ? 'RETURNING' : s.phase === 'stopped' ? 'EMERGENCY_STOP' : 'IDLE';
-  b.waypoint_seq = s.phase === 'mission' ? s.waypoints[s.target_idx].seq : null;
+  b.mode = MODE[s.phase];
+  b.waypoint_seq = s.phase === 'mission' || s.phase === 'paused' ? s.waypoints[s.target_idx]?.seq ?? null : null;
   b.link_type = linkDown ? 'none' : '4G';
 
   // ---- readings
   const readings: Reading[] = [];
   const sensorHealth: StepResult['sensorHealth'] = [];
   let telemetry: BoatTelemetry | null = null;
-  const nowIso = new Date(now).toISOString();
+  
   const zone = zoneAt(b.position, world.zones);
   const pol = pollutionIn(zone?.id ?? null, s.injections, now, s.speed_factor);
 
@@ -279,6 +381,14 @@ export function stepSim(prev: SimState, world: SimWorld, now: number, rng: () =>
         survey_id: null,
         confirmation: false,
       });
+    }
+  }
+
+  // ---- operator "take sample here" requests produce an extra full probe set
+  if (!linkDown && sampleAt.length) {
+    events.push({ type: 'sample_taken' });
+    for (const r of readings.filter((x) => x.source_type === 'boat' && !x.confirmation).slice(0, BOAT_PROBES.length)) {
+      readings.push({ ...r, id: newId('M', now) });
     }
   }
 
@@ -342,14 +452,126 @@ export function stepSim(prev: SimState, world: SimWorld, now: number, rng: () =>
     }
   }
 
-  return { state: s, telemetry, readings, sensorHealth, events };
+  return { state: s, telemetry, readings, sensorHealth, events, commandUpdates, missionUpdates };
 }
 
-function restartLoop(s: SimState) {
-  s.target_idx = 0;
-  s.phase = 'mission';
-  s.phase_reason = null;
-  for (const w of s.waypoints) w.status = 'pending';
+const MODE: Record<SimPhase, Boat['mode']> = {
+  mission: 'AUTO',
+  goto: 'AUTO',
+  paused: 'IDLE',
+  idle: 'IDLE',
+  charging: 'IDLE',
+  manual: 'MANUAL',
+  returning: 'RETURNING',
+  stopped: 'EMERGENCY_STOP',
+};
+
+function endMission(s: SimState, status: 'completed' | 'aborted', nowIso: string, out: MissionUpdate[], note: string | null) {
+  const id = s.boat.mission_id;
+  if (!id) return;
+  if (status === 'aborted') for (const w of s.waypoints) if (w.status === 'pending') w.status = 'skipped';
+  out.push({ mission_id: id, status, ended_at: nowIso, ...(note ? { note } : {}) });
+  s.boat.mission_id = null;
+}
+
+/** Boat-side execution of one command. Returns ok=false with a reason when the boat refuses it. */
+function execute(s: SimState, c: Command, world: SimWorld, now: number, missions: MissionUpdate[], sampleAt: LatLon[]): { ok: boolean; result?: string } {
+  const nowIso = new Date(now).toISOString();
+  const p = c.payload ?? {};
+  const fail = (result: string) => ({ ok: false, result });
+  switch (c.type) {
+    case 'EMERGENCY_STOP':
+      if (s.phase === 'mission') missions.push({ mission_id: s.boat.mission_id!, status: 'paused', note: 'Paused by emergency stop.' });
+      s.phase = 'stopped';
+      s.manual = null;
+      s.goto_target = null;
+      s.phase_reason = 'Emergency stop: motors off. Clear the stop or send Return home.';
+      return { ok: true };
+    case 'CLEAR_ESTOP':
+      if (s.phase !== 'stopped') return fail('Not emergency-stopped.');
+      s.phase = s.boat.mission_id ? 'paused' : 'idle';
+      s.phase_reason = s.boat.mission_id ? 'Emergency stop cleared; mission paused.' : 'Emergency stop cleared.';
+      return { ok: true };
+    case 'RETURN_HOME':
+      if (s.phase === 'mission' || s.phase === 'paused' || (s.phase === 'stopped' && s.boat.mission_id)) {
+        endMission(s, 'aborted', nowIso, missions, 'Aborted: operator sent Return home.');
+      }
+      s.phase = 'returning';
+      s.manual = null;
+      s.goto_target = null;
+      s.phase_reason = 'Returning home (operator command).';
+      return { ok: true };
+    case 'LOAD_MISSION': {
+      if (!p.mission_id || !p.waypoints?.length) return fail('No route in the mission.');
+      const outside = p.waypoints.find((w) => !pointInPolygon([w.lat, w.lon], world.waterBody.geofence));
+      if (outside) return fail(`Waypoint ${outside.seq} is outside the onboard geofence.`);
+      s.loaded = {
+        mission_id: p.mission_id,
+        waypoints: p.waypoints.map((w) => ({ mission_id: p.mission_id!, seq: w.seq, lat: w.lat, lon: w.lon, action: w.action, status: 'pending' as const })),
+      };
+      missions.push({ mission_id: p.mission_id, status: 'sent' });
+      return { ok: true };
+    }
+    case 'START_MISSION':
+      if (!s.loaded || s.loaded.mission_id !== p.mission_id) return fail('That mission is not loaded on the boat.');
+      if (s.phase !== 'idle' && s.phase !== 'charging') return fail(`Boat is busy (${s.phase}).`);
+      s.waypoints = s.loaded.waypoints;
+      s.target_idx = 0;
+      s.boat.mission_id = s.loaded.mission_id;
+      s.loaded = null;
+      s.phase = 'mission';
+      s.phase_reason = null;
+      missions.push({ mission_id: s.boat.mission_id, status: 'running', started_at: nowIso });
+      return { ok: true };
+    case 'PAUSE_MISSION':
+      if (s.phase !== 'mission') return fail('No mission running.');
+      s.phase = 'paused';
+      s.phase_reason = 'Mission paused by operator; holding position.';
+      missions.push({ mission_id: s.boat.mission_id!, status: 'paused' });
+      return { ok: true };
+    case 'RESUME_MISSION':
+      if (s.phase !== 'paused') return fail('No paused mission.');
+      s.phase = 'mission';
+      s.phase_reason = null;
+      missions.push({ mission_id: s.boat.mission_id!, status: 'running' });
+      return { ok: true };
+    case 'TAKE_SAMPLE':
+      sampleAt.push(s.boat.position);
+      return { ok: true };
+    case 'GOTO':
+      if (!p.target || !pointInPolygon(p.target, world.waterBody.geofence)) return fail('Target outside the onboard geofence.');
+      if (s.phase !== 'idle' && s.phase !== 'paused' && s.phase !== 'charging') return fail(`Boat is busy (${s.phase}).`);
+      if (s.phase === 'paused') {
+        // Leaving the route: the paused mission is aborted so the boat does not resume from a stale position.
+        endMission(s, 'aborted', nowIso, missions, 'Aborted: operator sent the boat to a point.');
+      }
+      s.phase = 'goto';
+      s.goto_target = p.target;
+      s.phase_reason = 'Going to the selected point.';
+      return { ok: true };
+    case 'ENTER_MANUAL':
+      if (s.phase !== 'idle' && s.phase !== 'paused' && s.phase !== 'charging') return fail(`Boat is busy (${s.phase}).`);
+      if (s.phase === 'paused') endMission(s, 'aborted', nowIso, missions, 'Aborted: operator took manual control.');
+      s.phase = 'manual';
+      s.manual = { heading_deg: s.boat.heading_deg, speed_mps: 0, last_input_at: now };
+      s.phase_reason = 'Manual control.';
+      return { ok: true };
+    case 'MANUAL_DRIVE':
+      if (s.phase !== 'manual' || !s.manual) return fail('Not in manual mode.');
+      s.manual = {
+        heading_deg: ((p.heading_deg ?? s.manual.heading_deg) + 360) % 360,
+        speed_mps: Math.max(0, Math.min(p.speed_mps ?? 0, world.settings.manual_max_speed_mps)),
+        last_input_at: now,
+      };
+      return { ok: true };
+    case 'EXIT_MANUAL':
+      if (s.phase !== 'manual') return fail('Not in manual mode.');
+      s.phase = 'idle';
+      s.manual = null;
+      s.phase_reason = 'Left manual mode; holding position.';
+      return { ok: true };
+  }
+  return fail(`Unknown command ${c.type}.`);
 }
 
 // ---------------------------------------------------------------- simulator controls (Settings)

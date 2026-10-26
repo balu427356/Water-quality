@@ -20,7 +20,8 @@ import {
   type SimState,
   type SimWorld,
 } from '../_shared/simCore.ts';
-import { DEFAULT_SETTINGS, type Settings } from '../_shared/types.ts';
+import { DEFAULT_SETTINGS, type Command, type Settings } from '../_shared/types.ts';
+import { timedOut } from '../_shared/operations.ts';
 
 const BOAT_ID = 'B1';
 const STEPS_PER_INVOCATION = 19;
@@ -73,9 +74,26 @@ async function tick() {
   const world = await loadWorld();
   const rng = mulberry32(Date.now() % 2 ** 31);
   for (let i = 0; i < STEPS_PER_INVOCATION; i++) {
-    const res = stepSim(state, world, Date.now(), rng);
+    const now = Date.now();
+    // Unfinished commands for this boat; ones never acknowledged within the timeout are closed first.
+    const { data: open } = await admin.from('commands').select('*').eq('boat_id', BOAT_ID).in('status', ['pending', 'acknowledged']);
+    const late = timedOut((open ?? []) as Command[], now, world.settings.command_timeout_s);
+    for (const c of late) {
+      await admin.from('commands').update({ status: 'timed_out', done_at: new Date(now).toISOString(), result: `No acknowledgement from the boat within ${world.settings.command_timeout_s} s.` }).eq('id', c.id);
+    }
+    const unfinished = ((open ?? []) as Command[]).filter((c) => !late.some((l) => l.id === c.id));
+    const before = new Map(state.waypoints.map((w) => [`${w.mission_id}|${w.seq}`, w.status]));
+    const res = stepSim(state, world, now, rng, unfinished);
     state = res.state;
     const writes: PromiseLike<unknown>[] = [];
+    for (const u of res.commandUpdates) {
+      const { id, ...rest } = u;
+      writes.push(admin.from('commands').update(rest).eq('id', id));
+    }
+    for (const u of res.missionUpdates) {
+      const { mission_id, ...rest } = u;
+      writes.push(admin.from('missions').update(rest).eq('id', mission_id));
+    }
     if (res.telemetry) {
       const b = state.boat;
       writes.push(admin.from('boat_telemetry').insert(res.telemetry));
@@ -86,6 +104,7 @@ async function tick() {
         }).eq('id', b.id),
       );
       for (const w of state.waypoints) {
+        if (before.get(`${w.mission_id}|${w.seq}`) === w.status) continue;
         writes.push(admin.from('waypoints').update({ status: w.status }).eq('mission_id', w.mission_id).eq('seq', w.seq));
       }
     }

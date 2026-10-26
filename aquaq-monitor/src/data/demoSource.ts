@@ -26,8 +26,49 @@ import {
   stepSim,
   type SimState,
 } from '@shared/simCore.ts';
-import { DEFAULT_ALERT_RULES, acknowledge, emptyMemory, resolve, runEngine, type EngineMemory } from '@shared/alertEngine.ts';
-import { DEFAULT_SETTINGS, type Alert, type AlertRule, type AuditEntry, type Parameter, type Profile, type Reading, type Settings } from '@shared/types.ts';
+import {
+  DEFAULT_ALERT_RULES,
+  acknowledge,
+  checklistCandidates,
+  emptyMemory,
+  missionProposedCandidate,
+  resolve,
+  runEngine,
+  type Candidate,
+  type EngineMemory,
+} from '@shared/alertEngine.ts';
+import {
+  approveMission,
+  buildPlannerRequest,
+  changeZoneLevel,
+  prepareCommand,
+  proposeMission,
+  timedOut,
+  validatePolygon,
+  validateWaterBodyEdit,
+  type OpsContext,
+} from '@shared/operations.ts';
+import { scheduledProposalNeeded } from '@shared/planner.ts';
+import {
+  DEFAULT_SETTINGS,
+  type Alert,
+  type AlertRule,
+  type AuditEntry,
+  type CommandPayload,
+  type CommandType,
+  type LatLon,
+  type MaintenanceTask,
+  type MissionKind,
+  type Parameter,
+  type Polygon,
+  type Profile,
+  type Reading,
+  type SamplingLevel,
+  type Settings,
+  type WaterBody,
+  type Zone,
+} from '@shared/types.ts';
+import { plannerClientFor } from '@/api/plannerClient';
 import { TRAIL_WINDOW_MS, emptySnapshot, matchesQuery, type DataSource, type ReadingQuery, type SimAction, type Snapshot } from './source';
 
 export const DEMO_USERS: (Profile & { password: string })[] = [
@@ -41,6 +82,10 @@ const LS_PARAMS = 'aquaq.demo.parameters';
 const LS_SETTINGS = 'aquaq.demo.settings';
 const LS_RULES = 'aquaq.demo.alertRules';
 const LS_PUSH = 'aquaq.demo.pushEnabled';
+const LS_GEOMETRY = 'aquaq.demo.geometry';
+const MAX_COMMANDS = 100;
+/** Actor for things the app does by itself (scheduled proposals). */
+const SCHEDULER: Profile = { id: 'scheduler', email: 'scheduler', full_name: 'Scheduler', role: 'admin' };
 const RESOLVED_RETENTION_MS = 7 * 86_400_000;
 const PRE_ROLL_TICKS = (30 * 60) / TELEMETRY_INTERVAL_S; // simulate the last 30 min so the trail is populated
 const MAX_LIVE_READINGS = 60_000;
@@ -74,6 +119,11 @@ export class DemoSource implements DataSource {
   private audit: AuditEntry[] = [];
   private engineMemory: EngineMemory = emptyMemory();
   private alertSeq = 0;
+  private commandSeq = 0;
+  private taskSeq = 0;
+  /** Alert candidates raised by actions (checklist failures, proposals), merged on the next engine run. */
+  private extraCandidates: Candidate[] = [];
+  private ready = false;
 
   async init() {
     if (this.snap.ready) return;
@@ -94,12 +144,17 @@ export class DemoSource implements DataSource {
     this.rng = mulberry32(2026);
     this.engineMemory = emptyMemory();
     const savedRules = lsGet<Record<string, Partial<AlertRule>>>(LS_RULES) ?? {};
+    const geometry = lsGet<{ waterBody?: Partial<WaterBody>; zones?: Record<string, Partial<Zone>> }>(LS_GEOMETRY) ?? {};
+    this.extraCandidates = [];
+    this.ready = false;
+    const start = now - PRE_ROLL_TICKS * TELEMETRY_INTERVAL_S * 1000;
+    mission.mission.started_at = new Date(start).toISOString();
 
     this.snap = {
       ...emptySnapshot(settings),
       ready: true,
-      waterBody: demoWaterBody(),
-      zones: demoZones(),
+      waterBody: { ...demoWaterBody(), ...(geometry.waterBody ?? {}) },
+      zones: demoZones().map((z) => ({ ...z, ...(geometry.zones?.[z.id] ?? {}) })),
       parameters,
       boats: [demoBoat(nowIso)],
       stations: demoStations(nowIso),
@@ -114,9 +169,9 @@ export class DemoSource implements DataSource {
     };
 
     // Pre-roll: run the simulator over the last 30 minutes so the map has a trail and live data.
-    const start = now - PRE_ROLL_TICKS * TELEMETRY_INTERVAL_S * 1000;
     this.sim = initialSimState(this.snap.boats[0], mission.waypoints, start);
     for (let i = 1; i <= PRE_ROLL_TICKS; i++) this.tick(start + i * TELEMETRY_INTERVAL_S * 1000, false);
+    this.ready = true;
     if (emit) this.emit();
   }
 
@@ -129,8 +184,30 @@ export class DemoSource implements DataSource {
       sensors: this.snap.sensors,
       settings: this.snap.settings,
     };
-    const res = stepSim(this.sim, world, now, this.rng);
+    // Commands the boat has not acknowledged within the timeout.
+    const late = new Set(timedOut(this.snap.commands, now, this.snap.settings.command_timeout_s).map((c) => c.id));
+    let commands = late.size
+      ? this.snap.commands.map((c) =>
+          late.has(c.id) ? { ...c, status: 'timed_out' as const, done_at: new Date(now).toISOString(), result: `No acknowledgement from the boat within ${this.snap.settings.command_timeout_s} s.` } : c,
+        )
+      : this.snap.commands;
+    const unfinished = commands.filter((c) => c.status === 'pending' || c.status === 'acknowledged');
+
+    const res = stepSim(this.sim, world, now, this.rng, unfinished);
     this.sim = res.state;
+    if (res.commandUpdates.length) commands = commands.map((c) => ({ ...c, ...(res.commandUpdates.find((u) => u.id === c.id) ?? {}) }));
+    const missions = res.missionUpdates.length
+      ? this.snap.missions.map((m) => {
+          const u = res.missionUpdates.filter((x) => x.mission_id === m.id);
+          return u.length ? Object.assign({ ...m }, ...u.map(({ mission_id: _id, note, ...rest }) => ({ ...rest, ...(note ? { note } : {}) }))) : m;
+        })
+      : this.snap.missions;
+    // Waypoint progress of the active mission comes from the boat (only while telemetry arrives).
+    const activeId = res.state.boat.mission_id ?? this.sim.waypoints[0]?.mission_id;
+    const waypoints =
+      res.telemetry && activeId
+        ? [...this.snap.waypoints.filter((w) => w.mission_id !== activeId), ...res.state.waypoints.filter((w) => w.mission_id === activeId)]
+        : this.snap.waypoints;
     if (res.readings.length) {
       this.live.push(...res.readings);
       if (this.live.length > MAX_LIVE_READINGS) this.live.splice(0, this.live.length - MAX_LIVE_READINGS);
@@ -156,7 +233,9 @@ export class DemoSource implements DataSource {
         ? this.snap.stations.map((s) => (stationIds.has(s.id) ? { ...s, last_seen: new Date(now).toISOString() } : s))
         : this.snap.stations,
       sensors,
-      waypoints: res.telemetry ? res.state.waypoints : this.snap.waypoints,
+      commands,
+      missions,
+      waypoints,
       boatTrail: res.telemetry
         ? [...this.snap.boatTrail.filter((t) => t.ts >= cutoff), res.telemetry]
         : this.snap.boatTrail.filter((t) => t.ts >= cutoff),
@@ -171,8 +250,35 @@ export class DemoSource implements DataSource {
         speed_factor: res.state.speed_factor,
       },
     };
+    if (this.ready) this.maybeProposeScheduled(now, false);
     this.runAlerts(now, res.readings);
     if (emit) this.emit();
+  }
+
+  /** The scheduler: one day before the next survey, plan a mission and notify operators. */
+  private maybeProposeScheduled(now: number, force: boolean) {
+    if (!force && scheduledProposalNeeded(now, this.snap.surveys, this.snap.missions, this.snap.settings) == null) return;
+    void this.planMission(SCHEDULER, { kind: 'scheduled', energy_budget: this.snap.settings.energy_budget }).catch((e: unknown) => {
+      this.log(SCHEDULER, 'mission.plan_failed', 'missions', '-', { error: e instanceof Error ? e.message : String(e) });
+    });
+  }
+
+  private opsContext(now = Date.now()): OpsContext {
+    const s = this.snap;
+    const last = s.surveys.filter((x) => x.status === 'completed').slice(-1)[0];
+    return {
+      now,
+      settings: s.settings,
+      waterBody: s.waterBody!,
+      zones: s.zones,
+      parameters: s.parameters,
+      boat: s.boats[0],
+      sensors: s.sensors,
+      surveys: s.surveys,
+      zoneScores: s.zoneScores,
+      missions: s.missions,
+      readings: [...this.history.filter((r) => r.survey_id === last?.id), ...s.recentReadings],
+    };
   }
 
   /** Run the alert rule engine on the readings that just arrived (the same engine the server runs). */
@@ -192,12 +298,15 @@ export class DemoSource implements DataSource {
         zoneScores: s.zoneScores,
         missions: s.missions,
         waterBody: s.waterBody,
+        commands: s.commands,
       },
       this.engineMemory,
       s.alerts,
       readings,
       () => `AL-${String(++this.alertSeq).padStart(4, '0')}`,
+      this.extraCandidates,
     );
+    this.extraCandidates = [];
     this.engineMemory = res.memory;
     if (!res.created.length && !res.merged.length && !res.escalated.length && !res.sensorUpdates.length) return;
     const keepAfter = new Date(now - RESOLVED_RETENTION_MS).toISOString();
@@ -305,6 +414,9 @@ export class DemoSource implements DataSource {
         this.reset(false);
         this.alertSeq = 0;
         break;
+      case 'propose_scheduled_now':
+        this.maybeProposeScheduled(now, true);
+        break;
     }
     this.log(user, `simulator.${a.action}`, 'boats', BOAT_ID, { ...a });
     this.tick(now);
@@ -335,6 +447,158 @@ export class DemoSource implements DataSource {
   async savePushSubscription(user: Profile, _sub: PushSubscriptionJSON, enabled: boolean) {
     // Demo mode has no push server: notifications are shown locally by the service worker.
     lsSet(LS_PUSH, enabled ? user.email : null);
+  }
+
+  // ---------------------------------------------------------------- missions and boat control
+
+  async planMission(user: Profile, input: { kind: MissionKind; energy_budget: number; source_alert_id?: string | null }) {
+    requireRole(user, ['operator', 'admin']);
+    if (!(input.energy_budget > 0)) throw new Error('The energy budget must be more than 0.');
+    const ctx = this.opsContext();
+    const alert = input.source_alert_id ? this.snap.alerts.find((a) => a.id === input.source_alert_id) : undefined;
+    const reading = alert ? this.snap.recentReadings.filter((r) => r.source_id === alert.source_id && r.trust_T != null).slice(-1)[0] : undefined;
+    const { request, notes } = buildPlannerRequest(ctx, {
+      kind: input.kind,
+      energy_budget: input.energy_budget,
+      source_alert_id: input.source_alert_id,
+      focus_zone_id: alert?.zone_id ?? null,
+      focus_trust: reading?.trust_T ?? null,
+    });
+    const client = plannerClientFor(this.snap.settings.planner_mode, this.snap.settings.planner_url);
+    const response = await client.plan(request);
+    const ctx2 = this.opsContext(); // the plan may take a moment; build on the latest state
+    const plan = proposeMission(ctx2, { ...input, focus_zone_id: alert?.zone_id ?? null }, request, response, notes);
+    this.snap = {
+      ...this.snap,
+      missions: [...this.snap.missions, plan.mission],
+      missionZones: [...this.snap.missionZones, ...plan.zones],
+      waypoints: [...this.snap.waypoints, ...plan.waypoints],
+    };
+    if (plan.mission.kind !== 'manual') {
+      const why = plan.mission.kind === 'early' ? `A fixed station reported a trusted exceedance (${alert?.title ?? 'station trigger'}).` : 'The next scheduled survey is due in about a day.';
+      this.extraCandidates.push(missionProposedCandidate(plan.mission, why));
+    }
+    this.log(user, 'mission.plan', 'missions', plan.mission.id, { kind: input.kind, solver: response.solver, planner: client.label, energy: plan.mission.energy_planned, budget: input.energy_budget });
+    this.emit();
+    return plan.mission.id;
+  }
+
+  async setMissionZoneLevel(user: Profile, missionId: string, zoneId: string, level: SamplingLevel) {
+    requireRole(user, ['operator', 'admin']);
+    const m = this.snap.missions.find((x) => x.id === missionId);
+    if (!m) throw new Error('Mission not found.');
+    const res = changeZoneLevel(this.opsContext(), m, this.snap.missionZones.filter((z) => z.mission_id === missionId), zoneId, level);
+    this.snap = {
+      ...this.snap,
+      missions: this.snap.missions.map((x) => (x.id === missionId ? res.mission : x)),
+      missionZones: [...this.snap.missionZones.filter((z) => z.mission_id !== missionId), ...res.zones],
+      waypoints: [...this.snap.waypoints.filter((w) => w.mission_id !== missionId), ...res.waypoints],
+    };
+    this.log(user, 'mission.change_level', 'missions', missionId, { zone: zoneId, level, energy: res.mission.energy_planned });
+    this.emit();
+  }
+
+  async approveMission(user: Profile, missionId: string) {
+    const m = this.snap.missions.find((x) => x.id === missionId);
+    if (!m) throw new Error('Mission not found.');
+    if (m.status === 'proposed') {
+      const approved = approveMission(m, user, Date.now());
+      this.snap = { ...this.snap, missions: this.snap.missions.map((x) => (x.id === missionId ? approved : x)) };
+      this.log(user, 'mission.approve', 'missions', missionId, { energy: m.energy_planned, budget: m.energy_budget, solver: m.solver });
+      this.emit();
+    }
+    try {
+      await this.issueCommand(user, 'LOAD_MISSION', { mission_id: missionId });
+    } catch (e) {
+      throw new Error(`Approved, but not sent to the boat yet: ${e instanceof Error ? e.message : String(e)} Use "Send to boat" when it is free.`);
+    }
+  }
+
+  async discardMission(user: Profile, missionId: string) {
+    requireRole(user, ['operator', 'admin']);
+    const m = this.snap.missions.find((x) => x.id === missionId);
+    if (!m) throw new Error('Mission not found.');
+    if (m.status !== 'proposed' && m.status !== 'approved') throw new Error(`A ${m.status} mission cannot be discarded.`);
+    this.snap = { ...this.snap, missions: this.snap.missions.map((x) => (x.id === missionId ? { ...x, status: 'aborted' as const, note: `Discarded by ${user.full_name}.`, ended_at: new Date().toISOString() } : x)) };
+    this.log(user, 'mission.discard', 'missions', missionId, {});
+    this.emit();
+  }
+
+  async issueCommand(user: Profile, type: CommandType, payload: CommandPayload = {}) {
+    const ctx = this.opsContext();
+    const pending = this.snap.commands.filter((c) => c.status === 'pending' || c.status === 'acknowledged');
+    try {
+      const { command, checklist } = prepareCommand(user, ctx, pending, type, payload, (id) => this.snap.waypoints.filter((w) => w.mission_id === id), () => `CMD-${String(++this.commandSeq).padStart(4, '0')}`);
+      if (checklist && !checklist.passed) {
+        this.log(user, 'checklist.override', 'missions', payload.mission_id ?? '-', { reason: payload.override_reason, failed: checklist.items.filter((i) => !i.ok).map((i) => `${i.label}: ${i.detail}`) });
+      }
+      this.snap = { ...this.snap, commands: [command, ...this.snap.commands].slice(0, MAX_COMMANDS) };
+      if (type !== 'MANUAL_DRIVE') this.log(user, 'command.issue', 'boats', command.boat_id, { command: command.id, type, payload: { ...payload, waypoints: undefined } });
+      this.emit();
+      return command;
+    } catch (e) {
+      const err = e as Error & { checklist?: { passed: boolean; items: { key: string; label: string; ok: boolean; detail: string }[] } };
+      if (err.checklist && !err.checklist.passed) this.extraCandidates.push(...checklistCandidates(ctx.boat.id, ctx.boat.name, err.checklist.items));
+      this.log(user, 'command.rejected', 'boats', ctx.boat.id, { type, reason: err.message });
+      throw err;
+    }
+  }
+
+  async createMaintenanceTask(user: Profile, t: { sensor_id: string; title: string; notes: string; assigned_to: string | null }) {
+    requireRole(user, ['operator', 'admin']);
+    if (!t.title.trim()) throw new Error('A task needs a title.');
+    const task: MaintenanceTask = {
+      id: `MT-${String(++this.taskSeq).padStart(3, '0')}`,
+      sensor_id: t.sensor_id,
+      title: t.title.trim(),
+      notes: t.notes.trim(),
+      assigned_to: t.assigned_to,
+      status: 'open',
+      created_by: user.id,
+      created_at: new Date().toISOString(),
+      closed_by: null,
+      closed_at: null,
+    };
+    this.snap = { ...this.snap, maintenanceTasks: [task, ...this.snap.maintenanceTasks] };
+    this.log(user, 'maintenance.create', 'sensors', t.sensor_id, { task: task.id, title: task.title, assigned_to: t.assigned_to });
+    this.emit();
+  }
+
+  async closeMaintenanceTask(user: Profile, id: string, calibrated: boolean) {
+    requireRole(user, ['operator', 'admin']);
+    const task = this.snap.maintenanceTasks.find((x) => x.id === id);
+    if (!task || task.status === 'done') throw new Error('Task not found or already closed.');
+    const nowIso = new Date().toISOString();
+    this.snap = {
+      ...this.snap,
+      maintenanceTasks: this.snap.maintenanceTasks.map((x) => (x.id === id ? { ...x, status: 'done' as const, closed_by: user.id, closed_at: nowIso } : x)),
+      sensors: calibrated
+        ? this.snap.sensors.map((x) => (x.id === task.sensor_id ? { ...x, last_calibrated_at: nowIso, health: 'ok' as const, maintenance_flag: false } : x))
+        : this.snap.sensors,
+    };
+    this.log(user, 'maintenance.close', 'sensors', task.sensor_id, { task: id, calibrated });
+    this.emit();
+  }
+
+  async updateWaterBody(user: Profile, patch: { geofence?: Polygon; home_point?: LatLon; boundary?: Polygon }) {
+    requireRole(user, ['admin']);
+    const next = validateWaterBodyEdit(this.snap.waterBody!, patch);
+    this.snap = { ...this.snap, waterBody: next };
+    const saved = lsGet<{ waterBody?: Partial<WaterBody>; zones?: Record<string, Partial<Zone>> }>(LS_GEOMETRY) ?? {};
+    lsSet(LS_GEOMETRY, { ...saved, waterBody: { ...(saved.waterBody ?? {}), ...patch } });
+    this.log(user, 'water_body.update', 'water_bodies', next.id, { fields: Object.keys(patch) });
+    this.emit();
+  }
+
+  async updateZonePolygon(user: Profile, zoneId: string, polygon: Polygon) {
+    requireRole(user, ['admin']);
+    validatePolygon(polygon, 'The zone');
+    if (!this.snap.zones.some((z) => z.id === zoneId)) throw new Error('Zone not found.');
+    this.snap = { ...this.snap, zones: this.snap.zones.map((z) => (z.id === zoneId ? { ...z, polygon } : z)) };
+    const saved = lsGet<{ waterBody?: Partial<WaterBody>; zones?: Record<string, Partial<Zone>> }>(LS_GEOMETRY) ?? {};
+    lsSet(LS_GEOMETRY, { ...saved, zones: { ...(saved.zones ?? {}), [zoneId]: { polygon } } });
+    this.log(user, 'zone.update', 'zones', zoneId, { points: polygon.length });
+    this.emit();
   }
 
   async listAudit(limit = 100) {

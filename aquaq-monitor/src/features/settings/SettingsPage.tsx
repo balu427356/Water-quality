@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Activity, BatteryLow, Droplets, RotateCcw, WifiOff, Waves } from 'lucide-react';
 import { formatLimit } from '@shared/limits.ts';
-import type { AlertChannel, AlertRule, AlertSeverity, AuditEntry, Parameter, RiskTier, Settings } from '@shared/types.ts';
+import type { AlertChannel, AlertRule, AlertSeverity, AuditEntry, LatLon, Parameter, RiskTier, Settings } from '@shared/types.ts';
+import { CircleMarker, Polygon, Polyline } from 'react-leaflet';
 import { useData, useSnapshot, useUser } from '@/data/DataProvider';
 import { zoneSummaries } from '@/data/selectors';
 import type { SimAction } from '@/data/source';
@@ -14,7 +15,7 @@ import { PageHeader } from '@/features/layout/AppShell';
 import { fmtDateTime } from '@/lib/time';
 import { cn } from '@/lib/utils';
 
-const TABS = ['Simulator', 'Parameters', 'Thresholds', 'Alert rules', 'Water body', 'Audit log'] as const;
+const TABS = ['Simulator', 'Parameters', 'Thresholds', 'Alert rules', 'Water body', 'Integrations', 'Audit log'] as const;
 type Tab = (typeof TABS)[number];
 
 export function SettingsPage() {
@@ -41,6 +42,7 @@ export function SettingsPage() {
         {tab === 'Thresholds' && <ThresholdsPanel />}
         {tab === 'Water body' && <WaterBodyPanel />}
         {tab === 'Alert rules' && <AlertRulesPanel />}
+        {tab === 'Integrations' && <IntegrationsPanel />}
         {tab === 'Audit log' && <AuditPanel />}
       </div>
     </div>
@@ -135,6 +137,12 @@ function SimulatorPanel() {
             <Button variant="secondary" disabled={busy} onClick={() => act({ action: 'reset' }, 'Simulator reset to the seeded demo state.')}>
               <RotateCcw className="h-4 w-4" aria-hidden /> Reset simulator
             </Button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 border-t pt-3">
+            <Button variant="outline" disabled={busy} onClick={() => act({ action: 'propose_scheduled_now' }, 'Scheduler ran: a scheduled-survey mission was proposed (see Missions) and operators were notified.')}>
+              Run survey scheduler now
+            </Button>
+            <span className="text-xs text-muted-foreground">Normally runs by itself 1 day before each scheduled survey.</span>
           </div>
           <Feedback msg={msg} />
         </CardContent>
@@ -355,42 +363,225 @@ function ThresholdsPanel() {
   );
 }
 
+type EditTarget = 'geofence' | 'boundary' | 'home' | `zone:${string}`;
+
 function WaterBodyPanel() {
   const snap = useSnapshot();
+  const { source } = useData();
+  const user = useUser();
+  const { busy, msg, run } = useAction();
   const tiers = Object.fromEntries(zoneSummaries(snap).map((s) => [s.zone.id, s.score?.risk_tier])) as Record<string, RiskTier | undefined>;
   const wb = snap.waterBody;
+  const [target, setTarget] = useState<EditTarget>('geofence');
+  const [drawing, setDrawing] = useState(false);
+  const [draft, setDraft] = useState<LatLon[]>([]);
+  if (!wb) return null;
+
+  const isPolygon = target !== 'home';
+  const label = target === 'home' ? 'home/dock point' : target === 'geofence' ? 'geofence' : target === 'boundary' ? 'water-body boundary' : `zone ${target.slice(5)}`;
+
+  function begin() {
+    setDraft([]);
+    setDrawing(true);
+  }
+  function cancel() {
+    setDraft([]);
+    setDrawing(false);
+  }
+  async function save() {
+    if (target === 'home') await source.updateWaterBody(user, { home_point: draft[0] });
+    else if (target === 'geofence') await source.updateWaterBody(user, { geofence: draft });
+    else if (target === 'boundary') await source.updateWaterBody(user, { boundary: draft });
+    else await source.updateZonePolygon(user, target.slice(5), draft);
+    cancel();
+  }
+
   return (
     <div className="grid gap-3 lg:grid-cols-3">
       <Card className="lg:col-span-2">
         <CardContent className="pt-4">
-          <div className="h-96 overflow-hidden rounded-md border">
-            <LakeMap snap={snap} tiers={tiers} className="h-full w-full" layers={{ route: false, trail: false, samples: false }} />
+          <div className="h-[28rem] overflow-hidden rounded-md border">
+            <LakeMap
+              snap={snap}
+              tiers={tiers}
+              className={cn('h-full w-full', drawing && '!cursor-crosshair')}
+              layers={{ route: false, trail: false, samples: false, boat: !drawing }}
+              onMapClick={drawing ? (p) => setDraft((d) => (isPolygon ? [...d, p] : [p])) : undefined}
+            >
+              {draft.length > 0 &&
+                (isPolygon ? (
+                  draft.length >= 3 ? (
+                    <Polygon positions={draft} pathOptions={{ color: '#7c3aed', weight: 3, dashArray: '4 4', fillOpacity: 0.1 }} />
+                  ) : (
+                    <Polyline positions={draft} pathOptions={{ color: '#7c3aed', weight: 3 }} />
+                  )
+                ) : null)}
+              {draft.map((p, i) => (
+                <CircleMarker key={i} center={p} radius={4} pathOptions={{ color: '#7c3aed', fillOpacity: 1 }} />
+              ))}
+              {!drawing && <CircleMarker center={wb.home_point} radius={6} pathOptions={{ color: '#0f172a', fillColor: '#facc15', fillOpacity: 1 }} />}
+            </LakeMap>
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Waves className="h-4 w-4" aria-hidden /> {wb?.name}
+            <Waves className="h-4 w-4" aria-hidden /> {wb.name}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <p>Type: {wb?.type}</p>
-          <p>Home / dock: {wb?.home_point.map((v) => v.toFixed(5)).join(', ')}</p>
-          <p>Geofence: {wb?.geofence.length} vertices</p>
-          <ul className="list-disc pl-5">
-            {snap.zones.map((z) => (
-              <li key={z.id}>
-                Zone {z.code}: {z.name}
-              </li>
-            ))}
-          </ul>
-          <p className="rounded-md border border-dashed p-2 text-xs text-muted-foreground">
-            Drawing and editing zones, the geofence and the home point on the map is scheduled with the Phase 3 safety work, so geofence changes ship together with
-            server-side command validation.
+        <CardContent className="space-y-3 text-sm">
+          <p>
+            Type: {wb.type} · dock {wb.home_point.map((v) => v.toFixed(5)).join(', ')} · geofence {wb.geofence.length} points · {snap.zones.length} zones
+          </p>
+          <div>
+            <Label htmlFor="edit-target" className="block text-xs">Edit</Label>
+            <Select id="edit-target" value={target} disabled={drawing} onChange={(e) => setTarget(e.target.value as EditTarget)}>
+              <option value="geofence">Geofence</option>
+              <option value="home">Home / dock point</option>
+              <option value="boundary">Water-body boundary</option>
+              {snap.zones.map((z) => (
+                <option key={z.id} value={`zone:${z.id}`}>Zone {z.code}: {z.name}</option>
+              ))}
+            </Select>
+          </div>
+          {!drawing ? (
+            <Button onClick={begin}>Draw new {label}</Button>
+          ) : (
+            <div className="space-y-2">
+              <p role="status" className="rounded-md bg-accent p-2 text-xs text-accent-foreground">
+                {isPolygon ? `Click the map to add points (${draft.length} so far, at least 3).` : 'Click the map to place the dock.'}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {isPolygon && (
+                  <Button variant="outline" size="sm" disabled={!draft.length} onClick={() => setDraft((d) => d.slice(0, -1))}>
+                    Undo point
+                  </Button>
+                )}
+                <Button size="sm" disabled={busy || (isPolygon ? draft.length < 3 : draft.length !== 1)} onClick={() => run(save, `Saved the new ${label}.`)}>
+                  Save {label}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={cancel}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+          <Feedback msg={msg} />
+          <p className="text-xs text-muted-foreground">
+            Checked on save: polygons need at least 3 points, the geofence must lie inside the boundary, and the dock must be inside the geofence. Changes apply
+            to new commands immediately; the boat's onboard geofence must be updated separately on the boat.
           </p>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function IntegrationsPanel() {
+  const { source } = useData();
+  const user = useUser();
+  const snap = useSnapshot();
+  const { busy, msg, run } = useAction();
+  const [form, setForm] = useState(snap.settings);
+  useEffect(() => setForm(snap.settings), [snap.settings]);
+  const num = (k: keyof Settings) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [k]: Number(e.target.value) }));
+
+  function validate(): Partial<Settings> {
+    if (form.planner_mode === 'remote' && !/^https?:\/\//.test(form.planner_url)) throw new Error('Enter the planner URL (http:// or https://) or switch to the mock planner.');
+    if (!(form.energy_budget > 0)) throw new Error('The default energy budget must be more than 0.');
+    if (!(form.manual_max_speed_mps > 0 && form.manual_max_speed_mps <= 2)) throw new Error('Manual max speed must be between 0 and 2 m/s.');
+    if (!(form.command_timeout_s >= 3)) throw new Error('The command timeout must be at least 3 s.');
+    return {
+      planner_mode: form.planner_mode,
+      planner_url: form.planner_url.trim(),
+      energy_budget: form.energy_budget,
+      command_timeout_s: form.command_timeout_s,
+      manual_max_speed_mps: form.manual_max_speed_mps,
+      manual_idle_timeout_s: form.manual_idle_timeout_s,
+      checklist_min_battery_pct: form.checklist_min_battery_pct,
+    };
+  }
+
+  return (
+    <div className="grid gap-3 lg:grid-cols-2">
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle>Mission planner</CardTitle>
+            <CardDescription>
+              The mock planner runs inside the app with the same request and response format as the planner service (POST /plan). Every plan shows the solver
+              that produced it.
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <fieldset className="space-y-1 text-sm">
+            <legend className="text-xs font-medium">Planner</legend>
+            <label className="flex items-center gap-2">
+              <input type="radio" name="planner" checked={form.planner_mode === 'mock'} onChange={() => setForm((f) => ({ ...f, planner_mode: 'mock' }))} /> Mock planner (v1)
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="radio" name="planner" checked={form.planner_mode === 'remote'} onChange={() => setForm((f) => ({ ...f, planner_mode: 'remote' }))} /> Planner service URL
+            </label>
+          </fieldset>
+          <div>
+            <Label htmlFor="planner-url" className="block text-xs">Planner service URL</Label>
+            <Input id="planner-url" placeholder="https://planner.example.org" value={form.planner_url} disabled={form.planner_mode !== 'remote'} onChange={(e) => setForm((f) => ({ ...f, planner_url: e.target.value }))} />
+            <p className="mt-1 text-xs text-muted-foreground">
+              {source.kind === 'supabase'
+                ? 'The API key is an Edge Function secret (PLANNER_API_KEY); it is never stored here or sent to browsers.'
+                : 'Demo mode calls this URL from the browser without an API key, so use it only with a local planner during development.'}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="eb" className="block text-xs">Default energy budget</Label>
+              <Input id="eb" type="number" min={1} value={form.energy_budget} onChange={num('energy_budget')} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle>Boat gateway and control limits</CardTitle>
+            <CardDescription>
+              {source.kind === 'demo'
+                ? 'Demo mode: the boat is the in-browser simulator.'
+                : 'Supabase: the simulator Edge Function (pg_cron) stands in for the gateway until the MQTT bridge writes telemetry and reads commands from the database.'}
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="ct" className="block text-xs">Command timeout (s)</Label>
+            <Input id="ct" type="number" min={3} value={form.command_timeout_s} onChange={num('command_timeout_s')} />
+          </div>
+          <div>
+            <Label htmlFor="mms" className="block text-xs">Manual max speed (m/s)</Label>
+            <Input id="mms" type="number" step={0.1} min={0.1} max={2} value={form.manual_max_speed_mps} onChange={num('manual_max_speed_mps')} />
+          </div>
+          <div>
+            <Label htmlFor="mit" className="block text-xs">Leave manual mode after (s without input)</Label>
+            <Input id="mit" type="number" min={30} value={form.manual_idle_timeout_s} onChange={num('manual_idle_timeout_s')} />
+          </div>
+          <div>
+            <Label htmlFor="cmb" className="block text-xs">Checklist minimum battery (%)</Label>
+            <Input id="cmb" type="number" min={30} max={100} value={form.checklist_min_battery_pct} onChange={num('checklist_min_battery_pct')} />
+          </div>
+          <p className="col-span-2 text-xs text-muted-foreground">
+            Email and SMS go through provider webhooks set as Edge Function secrets (EMAIL_WEBHOOK_URL, SMS_WEBHOOK_URL); web push uses VAPID secrets.
+          </p>
+        </CardContent>
+      </Card>
+      <div className="flex items-center gap-3 lg:col-span-2">
+        <Button disabled={busy} onClick={() => run(() => source.updateSettings(user, validate()), 'Integration settings saved.')}>
+          Save integration settings
+        </Button>
+        <Feedback msg={msg} />
+      </div>
     </div>
   );
 }

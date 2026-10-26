@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, CheckCircle2, Wrench } from 'lucide-react';
-import { useSnapshot } from '@/data/DataProvider';
+import { AlertTriangle, CheckCircle2, Plus, Wrench } from 'lucide-react';
+import { canOperate, useData, useSnapshot, useUser } from '@/data/DataProvider';
+import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
+import { Input, Label, Select } from '@/components/ui/form';
 import { useReadings } from '@/data/useReadings';
 import { paramName } from '@/data/selectors';
 import { HealthBadge } from '@/components/status';
@@ -24,6 +27,9 @@ export function SensorsPage() {
   }, [lowTrust.data]);
   const owners = Object.fromEntries([...snap.boats.map((b) => [b.id, b.name]), ...snap.stations.map((s) => [s.id, s.name])]);
   const now = Date.now();
+  const { user } = useData();
+  const staff = canOperate(user);
+  const [taskFor, setTaskFor] = useState<string | null>(null);
 
   const rows = snap.sensors.map((s) => {
     const days = Math.floor((now - new Date(s.last_calibrated_at).getTime()) / DAY_MS);
@@ -51,6 +57,7 @@ export function SensorsPage() {
                 <TH>Days since</TH>
                 <TH>Low-trust (30 d)</TH>
                 <TH>Maintenance</TH>
+                {staff && <TH />}
               </TR>
             </THead>
             <TBody>
@@ -71,6 +78,13 @@ export function SensorsPage() {
                   </TD>
                   <TD className="tabular-nums">{low}</TD>
                   <TD>{s.maintenance_flag ? <Badge className="border-red-700/30 bg-red-50 text-red-800"><Wrench className="h-3 w-3" aria-hidden /> Flagged</Badge> : <span className="text-muted-foreground">–</span>}</TD>
+                  {staff && (
+                    <TD>
+                      <Button size="sm" variant="outline" onClick={() => setTaskFor(s.id)} aria-label={`Create maintenance task for ${s.id}`}>
+                        <Plus className="h-3.5 w-3.5" aria-hidden /> Task
+                      </Button>
+                    </TD>
+                  )}
                 </TR>
               ))}
             </TBody>
@@ -123,10 +137,148 @@ export function SensorsPage() {
           })}
         </div>
 
-        <p className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
-          Maintenance flags are set automatically when a probe fails 3 confirmation checks in a row. Maintenance tasks and the pre-mission checklist arrive in Phase 3.
+        <MaintenanceTasks />
+        <p className="text-xs text-muted-foreground">
+          Maintenance flags are set automatically when a probe fails 3 confirmation checks in a row. Probes that are overdue, unhealthy or flagged fail the
+          pre-mission checklist, so a mission cannot start until they are fixed (or an admin overrides with a reason).
         </p>
+        {taskFor && <NewTaskDialog sensorId={taskFor} onClose={() => setTaskFor(null)} />}
       </div>
     </div>
+  );
+}
+
+function NewTaskDialog({ sensorId, onClose }: { sensorId: string; onClose: () => void }) {
+  const snap = useSnapshot();
+  const { source } = useData();
+  const user = useUser();
+  const sensor = snap.sensors.find((x) => x.id === sensorId);
+  const [title, setTitle] = useState(sensor ? `Calibrate ${paramName(snap, sensor.parameter_key)} probe (${sensorId})` : '');
+  const [notes, setNotes] = useState('');
+  const [assignee, setAssignee] = useState('');
+  const [err, setErr] = useState<string | null>(null);
+  const staff = snap.profiles.filter((p) => p.role !== 'viewer');
+
+  async function save() {
+    try {
+      await source.createMaintenanceTask(user, { sensor_id: sensorId, title, notes, assigned_to: assignee || null });
+      onClose();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  return (
+    <Dialog open onClose={onClose} title={`New maintenance task: ${sensorId}`}>
+      <div className="space-y-3">
+        <div>
+          <Label htmlFor="t-title" className="block text-xs">Title</Label>
+          <Input id="t-title" value={title} onChange={(e) => setTitle(e.target.value)} />
+        </div>
+        <div>
+          <Label htmlFor="t-notes" className="block text-xs">Notes</Label>
+          <textarea id="t-notes" rows={2} className="w-full rounded-md border border-input bg-card p-2 text-sm" value={notes} onChange={(e) => setNotes(e.target.value)} />
+        </div>
+        <div>
+          <Label htmlFor="t-assign" className="block text-xs">Assign to</Label>
+          <Select id="t-assign" value={assignee} onChange={(e) => setAssignee(e.target.value)}>
+            <option value="">Unassigned</option>
+            {staff.map((p) => (
+              <option key={p.id} value={p.id}>{p.full_name} ({p.role})</option>
+            ))}
+          </Select>
+        </div>
+        {err && <p role="alert" className="text-sm text-destructive">{err}</p>}
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => void save()} disabled={!title.trim()}>Create task</Button>
+        </div>
+      </div>
+    </Dialog>
+  );
+}
+
+function MaintenanceTasks() {
+  const snap = useSnapshot();
+  const { source, user } = useData();
+  const me = useUser();
+  const staff = canOperate(user);
+  const [closing, setClosing] = useState<string | null>(null);
+  const [calibrated, setCalibrated] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+  const who = (id: string | null) => snap.profiles.find((p) => p.id === id)?.full_name ?? (id ? id : 'Unassigned');
+  const tasks = snap.maintenanceTasks;
+
+  return (
+    <Card>
+      <CardHeader>
+        <div>
+          <CardTitle>Maintenance tasks</CardTitle>
+          <CardDescription>Create a task from a sensor row. Closing a task can mark the probe as calibrated, which resets its calibration date and health.</CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {tasks.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No maintenance tasks yet.</p>
+        ) : (
+          <Table>
+            <THead>
+              <TR><TH>Task</TH><TH>Sensor</TH><TH>Assigned to</TH><TH>Status</TH><TH>Created</TH>{staff && <TH />}</TR>
+            </THead>
+            <TBody>
+              {tasks.map((t) => (
+                <TR key={t.id}>
+                  <TD>
+                    <div className="font-medium">{t.title}</div>
+                    {t.notes && <div className="text-xs text-muted-foreground">{t.notes}</div>}
+                  </TD>
+                  <TD className="font-mono text-xs">{t.sensor_id}</TD>
+                  <TD>{who(t.assigned_to)}</TD>
+                  <TD>
+                    {t.status === 'open' ? (
+                      <Badge className="border-amber-700/30 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-100">Open</Badge>
+                    ) : (
+                      <Badge className="text-muted-foreground">Done {t.closed_at ? fmtDate(t.closed_at) : ''} · {who(t.closed_by)}</Badge>
+                    )}
+                  </TD>
+                  <TD className="whitespace-nowrap text-xs">{fmtDate(t.created_at)} · {who(t.created_by)}</TD>
+                  {staff && (
+                    <TD>
+                      {t.status === 'open' && (
+                        <Button size="sm" variant="outline" onClick={() => { setClosing(t.id); setCalibrated(true); setErr(null); }}>
+                          Close…
+                        </Button>
+                      )}
+                    </TD>
+                  )}
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        )}
+        <Dialog open={!!closing} onClose={() => setClosing(null)} title="Close maintenance task">
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" checked={calibrated} onChange={(e) => setCalibrated(e.target.checked)} className="mt-1" />
+            The probe was calibrated or cleaned: reset its calibration date, set health to OK and clear the maintenance flag.
+          </label>
+          {err && <p role="alert" className="mt-2 text-sm text-destructive">{err}</p>}
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setClosing(null)}>Cancel</Button>
+            <Button
+              onClick={async () => {
+                try {
+                  await source.closeMaintenanceTask(me, closing!, calibrated);
+                  setClosing(null);
+                } catch (e) {
+                  setErr(e instanceof Error ? e.message : String(e));
+                }
+              }}
+            >
+              Close task
+            </Button>
+          </div>
+        </Dialog>
+      </CardContent>
+    </Card>
   );
 }

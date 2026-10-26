@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Battery, Compass, Gauge, Layers, Radio, ShieldAlert } from 'lucide-react';
 import { limitStatus } from '@shared/limits.ts';
-import type { Reading, RiskTier } from '@shared/types.ts';
+import type { LatLon, Reading, RiskTier } from '@shared/types.ts';
+import { CircleMarker } from 'react-leaflet';
+import { BoatControls, EStopButton } from '@/features/control/BoatControls';
 import { useSnapshot } from '@/data/DataProvider';
 import { useReadings } from '@/data/useReadings';
 import { activeMission, latestSurvey, secondsSince, zoneSummaries } from '@/data/selectors';
@@ -26,6 +28,8 @@ export function LiveMapPage() {
   const snap = useSnapshot();
   const now = useNow();
   const [layers, setLayers] = useState<MapLayers>({ ...DEFAULT_LAYERS });
+  const [gotoMode, setGotoMode] = useState(false);
+  const [gotoTarget, setGotoTarget] = useState<LatLon | null>(null);
   const [heatParam, setHeatParam] = useState('turbidity');
   const [showLayers, setShowLayers] = useState(false);
   const survey = latestSurvey(snap);
@@ -36,7 +40,33 @@ export function LiveMapPage() {
   return (
     <div className="flex h-[calc(100dvh-7.5rem)] flex-col md:h-[calc(100dvh-2rem)] lg:flex-row short:h-[100dvh] short:flex-row">
       <div className="relative min-h-[50%] flex-1">
-        <LakeMap snap={snap} tiers={tiers} layers={layers} sampleReadings={samples} heatParam={heatParam} className="absolute inset-0" />
+        <LakeMap
+          snap={snap}
+          tiers={tiers}
+          layers={layers}
+          sampleReadings={samples}
+          heatParam={heatParam}
+          className={cn('absolute inset-0', gotoMode && '!cursor-crosshair')}
+          onMapClick={
+            gotoMode
+              ? (p) => {
+                  setGotoTarget(p);
+                  setGotoMode(false);
+                }
+              : undefined
+          }
+        >
+          {gotoTarget && <CircleMarker center={gotoTarget} radius={8} pathOptions={{ color: '#0e7490', weight: 3, fillOpacity: 0.2 }} />}
+        </LakeMap>
+        {gotoMode && (
+          <div role="status" className="absolute left-1/2 top-2 z-[1000] -translate-x-1/2 rounded-md bg-card px-3 py-2 text-sm font-medium shadow">
+            Click a point on the map to send the boat there ·{' '}
+            <button className="text-primary underline" onClick={() => setGotoMode(false)}>
+              cancel
+            </button>
+          </div>
+        )}
+        <EStopButton compact className="absolute bottom-6 left-2 z-[1000] w-52 short:bottom-2" />
 
         <div className="absolute right-2 top-2 z-[1000] flex flex-col items-end gap-2">
           <button
@@ -78,12 +108,24 @@ export function LiveMapPage() {
         </div>
       </div>
 
-      <BoatPanel now={now} />
+      <BoatPanel now={now} gotoMode={gotoMode} setGotoMode={setGotoMode} gotoTarget={gotoTarget} clearGoto={() => setGotoTarget(null)} />
     </div>
   );
 }
 
-function BoatPanel({ now }: { now: number }) {
+function BoatPanel({
+  now,
+  gotoMode,
+  setGotoMode,
+  gotoTarget,
+  clearGoto,
+}: {
+  now: number;
+  gotoMode: boolean;
+  setGotoMode: (v: boolean) => void;
+  gotoTarget: LatLon | null;
+  clearGoto: () => void;
+}) {
   const snap = useSnapshot();
   const boat = snap.boats[0];
   const mission = activeMission(snap);
@@ -120,6 +162,10 @@ function BoatPanel({ now }: { now: number }) {
         </div>
       )}
       {snap.sim?.phase_reason && <p className="mt-2 rounded-md bg-muted p-2 text-xs">{snap.sim.phase_reason}</p>}
+
+      <section aria-label="Boat controls" className="mt-3">
+        <BoatControls gotoMode={gotoMode} setGotoMode={setGotoMode} gotoTarget={gotoTarget} clearGoto={clearGoto} />
+      </section>
 
       <StaleDim ts={boat.last_seen}>
         <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
@@ -171,10 +217,10 @@ function BoatPanel({ now }: { now: number }) {
         </ul>
       </StaleDim>
 
-      <div className="mt-4 rounded-md border border-dashed p-3 text-xs text-muted-foreground">
-        Boat controls (start/pause, return home, go to point, manual mode and the emergency stop) are built in Phase 3 with server-side command
-        validation. The boat's own geofence, obstacle avoidance, low-battery return and link-loss failsafe always stay active.
-      </div>
+      <p className="mt-4 text-xs text-muted-foreground">
+        The app is not the only safety layer: the boat's own geofence, obstacle avoidance, low-battery return and link-loss failsafe always stay active
+        and cannot be turned off from here.
+      </p>
     </aside>
   );
 }

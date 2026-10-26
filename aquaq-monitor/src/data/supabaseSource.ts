@@ -2,7 +2,7 @@
 // Small tables are loaded fully and refreshed on change; readings and telemetry stream in.
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { DEFAULT_SETTINGS, type Alert, type AlertRule, type AuditEntry, type BoatTelemetry, type Parameter, type Profile, type Reading, type Settings } from '@shared/types.ts';
+import { DEFAULT_SETTINGS, type Alert, type AlertRule, type AuditEntry, type Command, type CommandPayload, type CommandType, type LatLon, type MaintenanceTask, type MissionKind, type Polygon, type SamplingLevel, type BoatTelemetry, type Parameter, type Profile, type Reading, type Settings } from '@shared/types.ts';
 import type { SimState } from '@shared/simCore.ts';
 import { TRAIL_WINDOW_MS, emptySnapshot, type DataSource, type ReadingQuery, type SimAction, type Snapshot } from './source';
 
@@ -46,7 +46,16 @@ export class SupabaseSource implements DataSource {
     if (!(await this.client.auth.getSession()).data.session) return; // RLS needs a signed-in user
     this.started = true;
     await Promise.all((Object.keys(TABLES) as TableName[]).map((t) => this.loadTable(t)));
-    await Promise.all([this.loadSettings(), this.loadLive(), this.loadSim(), this.loadAlerts(), this.loadAlertRules(), this.loadProfiles()]);
+    await Promise.all([
+      this.loadSettings(),
+      this.loadLive(),
+      this.loadSim(),
+      this.loadAlerts(),
+      this.loadAlertRules(),
+      this.loadProfiles(),
+      this.loadCommands(),
+      this.loadMaintenance(),
+    ]);
     this.snap = { ...this.snap, ready: true };
     this.emit();
     this.subscribeRealtime();
@@ -82,6 +91,16 @@ export class SupabaseSource implements DataSource {
   private async loadAlertRules() {
     const { data } = await this.client.from('alert_rules').select('*').order('id');
     this.snap = { ...this.snap, alertRules: (data ?? []) as AlertRule[] };
+  }
+
+  private async loadCommands() {
+    const { data } = await this.client.from('commands').select('*').order('issued_at', { ascending: false }).limit(100);
+    this.snap = { ...this.snap, commands: (data ?? []) as Command[] };
+  }
+
+  private async loadMaintenance() {
+    const { data } = await this.client.from('maintenance_tasks').select('*').order('created_at', { ascending: false }).limit(200);
+    this.snap = { ...this.snap, maintenanceTasks: (data ?? []) as MaintenanceTask[] };
   }
 
   private async loadProfiles() {
@@ -131,6 +150,12 @@ export class SupabaseSource implements DataSource {
       const alerts = [a, ...rest].sort((x, y) => rank[x.status] - rank[y.status] || (x.updated_at < y.updated_at ? 1 : -1));
       this.snap = { ...this.snap, alerts };
       this.emit();
+    });
+    ch.on('postgres_changes', { event: '*', schema: 'public', table: 'commands' }, () => {
+      void this.loadCommands().then(() => this.emit());
+    });
+    ch.on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_tasks' }, () => {
+      void this.loadMaintenance().then(() => this.emit());
     });
     ch.on('postgres_changes', { event: '*', schema: 'public', table: 'alert_rules' }, () => {
       void this.loadAlertRules().then(() => this.emit());
@@ -237,6 +262,10 @@ export class SupabaseSource implements DataSource {
   }
 
   async simControl(_user: Profile, a: SimAction) {
+    if (a.action === 'propose_scheduled_now') {
+      await this.op({ action: 'propose_scheduled_now' });
+      return;
+    }
     // The Edge Function checks the caller's role from their JWT and writes the audit entry.
     const { error } = await this.client.functions.invoke('simulator', { body: a });
     if (error) throw error;
@@ -265,6 +294,61 @@ export class SupabaseSource implements DataSource {
       ? await this.client.from('push_subscriptions').upsert({ endpoint: sub.endpoint, user_id: user.id, subscription: sub })
       : await this.client.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
     if (error) throw error;
+  }
+
+  // ---------------------------------------------------------------- missions and boat control
+  // All writes go through the `operations` Edge Function, which runs the shared validation
+  // (command rules, checklist, budget) with the caller's role and writes the audit log.
+
+  private async op<T = unknown>(body: Record<string, unknown>): Promise<T> {
+    const { data, error } = await this.client.functions.invoke('operations', { body });
+    if (error) {
+      // FunctionsHttpError carries the JSON body with our reason.
+      const ctx = (error as { context?: Response }).context;
+      const detail = ctx ? await ctx.json().catch(() => null) : null;
+      const err = new Error(detail?.error ?? error.message) as Error & { checklist?: unknown };
+      if (detail?.checklist) err.checklist = detail.checklist;
+      throw err;
+    }
+    return data as T;
+  }
+
+  async planMission(_user: Profile, input: { kind: MissionKind; energy_budget: number; source_alert_id?: string | null }) {
+    const r = await this.op<{ mission_id: string }>({ action: 'plan', ...input });
+    return r.mission_id;
+  }
+
+  async setMissionZoneLevel(_user: Profile, missionId: string, zoneId: string, level: SamplingLevel) {
+    await this.op({ action: 'set_level', mission_id: missionId, zone_id: zoneId, level });
+  }
+
+  async approveMission(_user: Profile, missionId: string) {
+    await this.op({ action: 'approve', mission_id: missionId });
+  }
+
+  async discardMission(_user: Profile, missionId: string) {
+    await this.op({ action: 'discard', mission_id: missionId });
+  }
+
+  async issueCommand(_user: Profile, type: CommandType, payload: CommandPayload = {}) {
+    const r = await this.op<{ command: Command }>({ action: 'command', type, payload });
+    return r.command;
+  }
+
+  async createMaintenanceTask(_user: Profile, t: { sensor_id: string; title: string; notes: string; assigned_to: string | null }) {
+    await this.op({ action: 'maintenance_create', ...t });
+  }
+
+  async closeMaintenanceTask(_user: Profile, id: string, calibrated: boolean) {
+    await this.op({ action: 'maintenance_close', id, calibrated });
+  }
+
+  async updateWaterBody(_user: Profile, patch: { geofence?: Polygon; home_point?: LatLon; boundary?: Polygon }) {
+    await this.op({ action: 'water_body', patch });
+  }
+
+  async updateZonePolygon(_user: Profile, zoneId: string, polygon: Polygon) {
+    await this.op({ action: 'zone_polygon', zone_id: zoneId, polygon });
   }
 
   async listAudit(limit = 100) {

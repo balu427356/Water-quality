@@ -71,7 +71,7 @@ export function AlertNotifier() {
   const dismiss = (key: string) => setToasts((all) => all.filter((x) => x.key !== key));
 
   return (
-    <div aria-live="polite" className="pointer-events-none fixed right-2 top-2 z-[1500] flex w-[min(24rem,calc(100vw-1rem))] flex-col gap-2">
+    <div aria-live="polite" className="pointer-events-none fixed left-1/2 top-2 z-[1500] flex w-[min(24rem,calc(100vw-1rem))] -translate-x-1/2 flex-col gap-2">
       {toasts.map((t) => (
         <div
           key={t.key}

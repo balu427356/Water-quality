@@ -3,10 +3,12 @@
 Operator app for quantum-assisted water-quality monitoring: an autonomous survey boat, fixed sensor
 stations, and a server-side trust → risk → mission-planning chain. Responsive web app, installable as a PWA.
 
-**Status: Phases 1–2 (monitoring and alerts).** Auth and roles, data model and seed data, dashboard, live
-map, analytics, zone details, sensors page, simulator, and the alert rule engine with notification centre,
-acknowledge/resolve, escalation and web push. Missions and boat control (Phase 3) and real integrations,
-PDF reports and survey reports (Phase 4) come next. See [Roadmap](#roadmap).
+**Status: Phases 1–3 (monitoring, alerts, missions and boat control).** Auth and roles, data model and
+seed data, dashboard, live map, analytics, zone details, sensors page, simulator; the alert rule engine
+with notification centre, escalation and web push; mission planning (mock planner), plan review and
+approval, boat commands with acknowledgements, emergency stop, manual mode, pre-mission checklist,
+maintenance tasks and geofence/zone editing. Real integrations and reports (Phase 4) come next. See
+[Roadmap](#roadmap).
 
 ## Quick start (no backend needed)
 
@@ -21,13 +23,30 @@ Sign in with a demo account (password `demo1234`):
 | Email | Role |
 | --- | --- |
 | `admin@aquaq.demo` | Admin: everything, including Settings and simulator controls |
-| `operator@aquaq.demo` | Operator: all views (mission and boat controls arrive in Phase 3) |
+| `operator@aquaq.demo` | Operator: plans and approves missions, controls the boat, handles alerts and maintenance |
 | `viewer@aquaq.demo` | Viewer: read-only |
 
 Demo mode runs entirely in the browser: a seeded demo lake (4 zones, 2 stations, 6 past surveys 15 days
 apart, 90 days of hourly station data) and a simulator that moves the boat at 0.8 m/s along the running
 mission, writes telemetry every 3 s and station readings every 5 minutes. On load it simulates the
-previous 30 minutes so the trail and live readings are already populated.
+previous 30 minutes so the trail and live readings are already populated. The seeded mission M-0012 is
+already running; when it ends (or you send Return home) the boat docks and waits for the next approved
+mission.
+
+A typical walk-through:
+
+1. **Missions → Plan next mission** (budget 14): the mock planner proposes A hotspot 5 m, B confirm,
+   C standard 25 m, D skip (energy 14, value 2.69). Change a level to see the energy recalculated;
+   approval is blocked over budget.
+2. **Approve and send to boat.** While M-0012 is still running the plan is approved but not sent; send
+   **Return home** on the live map (it aborts M-0012), then **Send to boat**.
+3. **Start mission**: the pre-mission checklist fails on the boat's dissolved-oxygen probe (20 days since
+   calibration). Fix it on **Sensors** (create a maintenance task, close it as calibrated) or, as admin,
+   override with a reason (logged).
+4. On the **live map**: emergency stop, pause/resume, sample here, go to point (a point outside the
+   geofence is rejected), manual mode with the hold-to-drive pad.
+5. **Settings → Simulator → Drop link** then send Return home: it times out after 10 s with a Retry
+   button and a "Command failed" alert.
 
 Try the simulator in **Settings → Simulator** (admin):
 
@@ -35,10 +54,13 @@ Try the simulator in **Settings → Simulator** (admin):
 - **Inject pollution plume** in a zone: trusted exceedances from the boat and that zone's station.
 - **Drop link for 90 s**: the live map dims stale data and, after the 60 s link-loss timeout, shows "Boat following onboard failsafe".
 - **Drain battery**: the boat's onboard failsafe returns it to the dock.
-- **Simulation speed** ×1–×20 (demo only) so a full patrol loop doesn't take an hour.
+- **Simulation speed** ×1–×20 (demo only) so a full mission doesn't take an hour.
+- **Run survey scheduler now**: proposes the scheduled-survey mission that normally appears one day
+  before each survey, and notifies operators.
 
-Each of these raises the matching alert (see [Alerts](#alerts)). In demo mode, parameter, threshold and
-alert-rule edits are saved in this browser's localStorage; everything else resets when the page reloads.
+Each of these raises the matching alert (see [Alerts](#alerts)). In demo mode, parameter, threshold,
+alert-rule, integration and geometry edits are saved in this browser's localStorage; everything else
+resets when the page reloads.
 
 ## Scripts
 
@@ -77,8 +99,9 @@ Never put the service-role key or email/SMS provider keys in a `VITE_` variable:
    `supabase/migrations/*.sql` into the SQL editor in order).
 2. Seed it: `SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… npm run seed:supabase`. This creates the
    demo lake, history and the three demo users.
-3. Deploy the functions: `supabase functions deploy simulator` and `supabase functions deploy alerts`, then
-   `supabase secrets set CRON_SECRET=<random string>` (plus the VAPID secrets for web push).
+3. Deploy the functions: `supabase functions deploy simulator`, `supabase functions deploy alerts` and
+   `supabase functions deploy operations`, then `supabase secrets set CRON_SECRET=<random string>`
+   (plus the VAPID secrets for web push, and `PLANNER_API_KEY` if you use a planner service).
 4. Schedule both every minute with `supabase/cron.sql.example` (needs `pg_cron` and `pg_net`).
 5. Set `VITE_DATA_SOURCE=supabase`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and
    `VITE_VAPID_PUBLIC_KEY`, and rebuild.
@@ -88,33 +111,48 @@ simulator writes: one `boat_telemetry` row and one `readings` row per probe per 
 section 9 of the brief), plus an update of the `boats` row. Unschedule the simulator
 (`select cron.unschedule('aquaq-simulator')`) and point the bridge at the database with a service-role key
 kept on the bridge. Keep the `aquaq-alerts` schedule: the alert engine works on whatever writes readings.
-Confirmation samples are written with `confirmation = true`. The app does not change.
+Confirmation samples are written with `confirmation = true`. The bridge also reads `commands` rows for
+the boat (`pending`), forwards them over MQTT and writes back `acknowledged` / `executed` / `failed`
+with `ack_at`, `done_at` and `result`; mission progress goes to `missions.status` and `waypoints.status`.
+`LOAD_MISSION` carries the route in its payload. The app does not change.
 
-**Mock planner → quantum planner service.** Phase 3 adds the planner client and the mock planner; the
-planner URL and key will be set in Settings → Integrations and kept server-side.
+**Mock planner → quantum planner service.** In **Settings → Integrations** choose *Planner service URL*
+and enter its base URL; the app calls `POST <url>/plan` with the section 9 request. With Supabase the
+`operations` function makes the call and adds `Authorization: Bearer $PLANNER_API_KEY` (a function
+secret, never sent to browsers). The response is validated (known zones and levels, within budget,
+route inside the geofence) before it becomes a proposed mission, and the solver it reports
+(`quantum_qaoa`, `quantum_annealer`, `classical_fallback`) is shown on the plan. If the service returns no
+waypoints the app builds the route itself. In demo mode the browser calls the URL directly without a key,
+which is only suitable for a local planner during development.
 
 ## Project layout
 
 ```
 aquaq-monitor/
 ├─ src/
+│  ├─ api/             typed external-service clients (planner)
 │  ├─ data/            DataSource interface, demo (in-browser) and Supabase implementations, selectors
 │  ├─ components/      UI primitives (shadcn-style), status badges, map, chart card
-│  ├─ features/        one folder per feature: auth, dashboard, map, analytics, zones, sensors, missions, settings
+│  ├─ features/        one folder per feature: auth, dashboard, map, control, missions, alerts, analytics,
+│  │                   zones, sensors, settings
 │  └─ lib/             time (Asia/Kolkata), CSV export, helpers
 ├─ supabase/
-│  ├─ migrations/      0001_schema.sql (tables), 0002_rls.sql (Row Level Security)
+│  ├─ migrations/      0001 schema, 0002 RLS, 0003 alerts, 0004 missions/commands/maintenance
 │  └─ functions/
 │     ├─ _shared/      pure TypeScript shared by the app, the seed script and Edge Functions:
 │     │                types, geo, limits/scoring helpers, demo lake + history, simulator core,
-│     │                alert rule engine (+ tests)
-│     ├─ simulator/    Edge Function running the simulator against the database
-│     └─ alerts/       Edge Function running the alert engine, escalation and push/email/SMS dispatch
+│     │                alert rule engine, mock planner + route builder, command validation and
+│     │                pre-mission checklist, mission operations, planner client (+ tests)
+│     ├─ _server/      database helpers used only by Edge Functions
+│     ├─ simulator/    Edge Function running the simulator (boat + stations, commands) against the database
+│     ├─ alerts/       Edge Function: alert engine, escalation, scheduled-survey proposals, push/email/SMS
+│     └─ operations/   Edge Function: planning, approval, boat commands, maintenance and geometry edits,
+│                      validated with the shared rules as the signed-in user
 └─ scripts/seed-supabase.ts
 ```
 
-The browser and the Edge Functions run the same simulator and alert-engine code (`_shared/simCore.ts`,
-`_shared/alertEngine.ts`), so demo mode and Supabase mode behave the same.
+The browser and the Edge Functions run the same simulator, alert-engine, planner and command-validation
+code (`_shared/`), so demo mode and Supabase mode behave the same.
 
 ## Database schema
 
@@ -134,18 +172,22 @@ mixed-case columns so the API matches the brief.
 | `readings` | Every measurement, indexed on `(zone_id, parameter_key, ts)`; `edge_anomaly_flag`, `"trust_T"`, `survey_id`, `confirmation`, `inserted_at` (alert-engine cursor) |
 | `boat_telemetry` | Position/battery/mode history (trail, replay) |
 | `surveys`, `zone_scores` | Survey runs and per-zone R, T, tier, drivers and trust gate |
-| `missions`, `mission_zones`, `waypoints` | Plans, per-zone sampling levels, routes |
+| `missions`, `mission_zones`, `waypoints` | Plans (`kind` scheduled / early / manual, solver, energy, objective, status), per-zone sampling levels and reasons, routes |
 | `alerts` | Rule, dedup key, severity, category, title, message, suggested action, zone/source/parameter, value vs limit, status workflow, merge `count`, escalation |
 | `alert_rules` | Enabled, base severity, channels, cooldown per rule (seeded with the section 7 rules) |
 | `push_subscriptions` | Web-push subscriptions, one per device; each user manages their own |
 | `engine_state` | Alert-engine memory and reading cursor between runs (service role only) |
-| `commands` | Created now, used from Phase 3 |
+| `commands` | Boat commands: type, payload, issued by/at, status (pending → acknowledged → executed / failed / timed_out), `ack_at`, `done_at`, `result` |
+| `maintenance_tasks` | Sensor maintenance: title, notes, assignee, open/done, who closed it |
 | `audit_log` | Who did what, when, with details |
 | `sim_state` | Simulator state between Edge Function runs (v1 only) |
 
 **RLS:** every signed-in user can read. Configuration tables (`water_bodies`, `zones`, `parameters`,
 `app_settings`, `alert_rules`, `stations`) are writable by admins only. Operational tables (`commands`,
-`missions`, `mission_zones`, `waypoints`, `sensors`) by operators and admins. Alerts change only through
+`missions`, `mission_zones`, `waypoints`, `sensors`, `water_bodies`, `zones`) are read-only for clients:
+they change only through the `operations` Edge Function, which re-runs the shared validation (role,
+geofence, mode conflicts, pre-mission checklist, energy budget, polygon checks) and writes the audit log.
+Alerts change only through
 the engine (service role) and the `acknowledge_alert` / `resolve_alert` functions, which check the role,
 the state transition and the required note, and write the audit log. `audit_log` is insert-only and a
 row must name the caller. The simulator, alert engine and gateway use the service-role key.
@@ -182,9 +224,10 @@ every minute.
 | Low battery | Battery below the return level (the boat returns by itself) | High |
 | Link lost | No telemetry for longer than the link-loss timeout | Critical |
 | Geofence | Boat within 10 m of the geofence / outside it | Warning / Critical |
-| Command failed | A command times out or fails (wired up in Phase 3) | Warning |
+| Command failed | A command is not acknowledged within 10 s, or the boat reports it failed | Warning |
 | Fallback used | A mission was planned with the classical fallback | Info |
-| Calibration due | Sensor not calibrated for more than 15 days (pre-mission check failures join in Phase 3) | Warning |
+| Calibration due | Sensor not calibrated for more than 15 days, or a probe failed the pre-mission check | Warning |
+| Mission proposed | A scheduled-survey or early mission waits for approval (added rule) | Info |
 
 - **Noise control:** an alert that is still open or acknowledged absorbs repeats of the same rule, zone
   and parameter (count shown as ×N). After an alert is resolved, the rule's cooldown must pass before
@@ -201,20 +244,52 @@ every minute.
   (probe drift does not apply to it), which is what turns a "Possible sensor fault" into "Confirmed
   pollution" or "Fault confirmed". In the demo route that waypoint is in zone B.
 
+## Missions and boat control
+
+**Planning.** The planner request uses the latest zone scores (section 9 format). The mock planner values
+each choice as R × T × gain (1.0 / 1.6 / 2.2 for 25 / 10 / 5 m), a confirmation sample as R × (1 − T) × 1.2,
+skip 0, tries every combination up to 8 zones and keeps the best within the budget; above 8 zones it
+uses a greedy value-per-energy pass and says so on the plan. The route builder lays north–south
+transects at the level's spacing (standard over the whole zone, dense in a 120 m box and hotspot in a
+60 m box around the strongest trusted exceedance), puts a confirmation sample at the lowest-trust
+anomaly, keeps every waypoint at least 12 m inside the geofence, visits zones nearest-first and ends at
+the dock.
+
+**Approval.** Plans are only ever *proposed*. An operator reviews the map, the zone table (with reasons),
+the solver, energy against budget and level counts, can change any zone's level (energy, value and route
+are recalculated; approval is blocked over budget), then presses **Approve and send to boat**. Scheduled
+surveys are proposed one day before they are due; a station trigger alert offers **Plan early mission**,
+which raises that zone's risk and marks the plan *Early mission*.
+
+**Commands.** Every command is validated on the server: operator/admin only; Go to point must be inside
+the geofence; commands that conflict with the current mode are rejected (for example Go to point during a
+running mission); while the link is lost only Emergency stop and Return home can be sent. Emergency stop
+and Return home are always allowed. Each command shows pending → acknowledged → executed (or failed /
+timed out after 10 s, with Retry), and conflicting buttons are disabled while one is pending.
+
+**Manual mode** needs a confirmation, is limited to the manual max speed (default 1 m/s), stops when no
+drive input arrives for 4 s (deadman), and leaves manual mode after 2 minutes without input. The boat
+refuses to drive out of its onboard geofence.
+
+**Pre-mission checklist:** every boat probe calibrated within the interval, healthy and not flagged;
+battery ≥ 80 %; link OK; geofence loaded with the dock inside. A mission cannot start until it passes
+unless an admin overrides it with a reason, which is written to the audit log.
+
 ## Limits and safety notes
 
 - Default safe limits are a starting point. Check them against the standard that applies to the water
   body (for example BIS IS 10500 for drinking water, CPCB criteria for surface water).
 - The app is never the only safety layer: the boat keeps its own geofence, obstacle avoidance,
-  low-battery return and link-loss failsafe. In Phase 1 the app sends no boat commands at all.
+  low-battery return and link-loss failsafe. The app shows these states and cannot turn them off; the
+  simulator models them (geofence hold in manual mode, low-battery return, link-loss hold).
 
 ## Roadmap
 
 1. **Phase 1, monitoring** (done).
 2. **Phase 2, alerts** (done): rule engine with the seeded rules, notification centre,
    acknowledge/resolve, escalation, web push.
-3. **Phase 3, missions and control:** mock planner (with the section 10 unit test), plan review and
-   approval, command flow with acknowledgements and timeouts, emergency stop, manual mode, geofence
-   validation, pre-mission checklist, zone/geofence drawing.
+3. **Phase 3, missions and control** (done): mock planner (with the section 10 unit test), plan review
+   and approval, command flow with acknowledgements and timeouts, emergency stop, manual mode, geofence
+   validation, pre-mission checklist, maintenance tasks, zone/geofence drawing, audit log.
 4. **Phase 4, integration and reports:** real planner API and boat gateway, PDF survey reports, raw
    CSV export page.

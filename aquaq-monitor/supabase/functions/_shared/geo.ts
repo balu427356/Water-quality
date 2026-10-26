@@ -85,3 +85,8 @@ export function pathLengthM(points: LatLon[]): number {
   for (let i = 1; i < points.length; i++) total += distanceM(points[i - 1], points[i]);
   return total;
 }
+
+/** Inverse of fromLocal: east/north metre offsets of `p` from `origin`. */
+export function toLocal(origin: LatLon, p: LatLon): [number, number] {
+  return [toRad(p[1] - origin[1]) * EARTH_R * Math.cos(toRad(origin[0])), toRad(p[0] - origin[0]) * EARTH_R];
+}
