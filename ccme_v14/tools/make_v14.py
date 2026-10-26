@@ -495,7 +495,7 @@ def _present():
                     "use the range over countries × seeds instead of a CI. Descriptive rows compare point estimates only. Bold = supported.")
 _present()
 '''
-new_cell = {"cell_type": "code", "execution_count": None, "metadata": {}, "outputs": [], "source": CLAIM_CELL.splitlines(keepends=True)}
+new_cell = {"cell_type": "code", "execution_count": None, "id": "c1a1c4ec", "metadata": {}, "outputs": [], "source": CLAIM_CELL.splitlines(keepends=True)}
 cells.insert(97, new_cell)          # after the summary table (cell 96); the old cell 97 (text summary) becomes 98
 
 # ============================================================ notes for the manuscript (now cell 99)

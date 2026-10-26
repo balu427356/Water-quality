@@ -85,7 +85,18 @@ reviewer would find four problems that change results or claims:
 
 ## 6. Smoke test
 
-Pending: the end-to-end run on the synthetic file is in progress; this section is updated when it finishes.
+`tools/make_synthetic.py` writes a 46,475-row file with the columns of `Combined_dataset.csv` (five countries, station series,
+country-median imputation, a reporting-limit constant, an aggregate identifier, invalid rows, duplicates, published label).
+`tools/smoke_run.py` executes a notebook on it with reduced sample sizes, trees, epochs and bootstrap draws; no other cell is changed.
+The values are random, so **no number from this run means anything**; it only shows that the code executes.
+
+* **v14: every cell executed without error** (100 cells, 60 numbered tables). The leakage audit runs 11 tested checks, all pass,
+  including the two new ones (no imputed value in 6,441 training/target labels; 82,377 carried-forward values traced to earlier
+  genuine visits of the same site). The unit tests pass, including QWK with absent classes. §14b–§14c (deep models, prior-work
+  protocol), §15e (training tiers) and Table 60 (claim check) all render.
+* With 100 bootstrap draws the smallest Holm-adjusted p for a family of nine comparisons is 0.09, so the claim check cannot mark those
+  claims "supported" in the smoke run; with the notebook's 1,000 draws the floor is 0.009.
+* v13 on the same file: run in progress (it shares the harness and data; result added when it finishes).
 
 ## 7. Next steps
 
