@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Activity, BatteryLow, Droplets, RotateCcw, WifiOff, Waves } from 'lucide-react';
 import { formatLimit } from '@shared/limits.ts';
-import type { AuditEntry, Parameter, RiskTier, Settings } from '@shared/types.ts';
+import type { AlertChannel, AlertRule, AlertSeverity, AuditEntry, Parameter, RiskTier, Settings } from '@shared/types.ts';
 import { useData, useSnapshot, useUser } from '@/data/DataProvider';
 import { zoneSummaries } from '@/data/selectors';
 import type { SimAction } from '@/data/source';
@@ -14,7 +14,7 @@ import { PageHeader } from '@/features/layout/AppShell';
 import { fmtDateTime } from '@/lib/time';
 import { cn } from '@/lib/utils';
 
-const TABS = ['Simulator', 'Parameters', 'Thresholds', 'Water body', 'Audit log'] as const;
+const TABS = ['Simulator', 'Parameters', 'Thresholds', 'Alert rules', 'Water body', 'Audit log'] as const;
 type Tab = (typeof TABS)[number];
 
 export function SettingsPage() {
@@ -40,6 +40,7 @@ export function SettingsPage() {
         {tab === 'Parameters' && <ParametersPanel />}
         {tab === 'Thresholds' && <ThresholdsPanel />}
         {tab === 'Water body' && <WaterBodyPanel />}
+        {tab === 'Alert rules' && <AlertRulesPanel />}
         {tab === 'Audit log' && <AuditPanel />}
       </div>
     </div>
@@ -320,6 +321,9 @@ function ThresholdsPanel() {
           {field('near_limit_pct', '"Near limit" band', { min: 1, max: 50, unit: '%' })}
           {field('crosscheck_distance_m', 'Cross-check distance', { min: 1, unit: 'm' })}
           {field('crosscheck_tolerance_pct', 'Cross-check tolerance', { min: 1, unit: '%' })}
+          {field('escalation_minutes', 'Escalate unacknowledged critical after', { min: 1, unit: 'min' })}
+          {field('geofence_warning_m', 'Geofence warning distance', { min: 1, unit: 'm' })}
+          {field('calibration_due_days', 'Calibration interval', { min: 1, unit: 'days' })}
         </div>
         <fieldset className="rounded-md border p-3">
           <legend className="px-1 text-sm font-medium">Risk-tier cut-offs (R ≥ value)</legend>
@@ -440,6 +444,123 @@ function AuditPanel() {
             </TBody>
           </Table>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+const CHANNELS: { key: AlertChannel; label: string }[] = [
+  { key: 'in_app', label: 'In-app' },
+  { key: 'push', label: 'Web push' },
+  { key: 'email', label: 'Email' },
+  { key: 'sms', label: 'SMS' },
+];
+
+function AlertRulesPanel() {
+  const { source } = useData();
+  const user = useUser();
+  const snap = useSnapshot();
+  const { busy, msg, run } = useAction();
+  const [edits, setEdits] = useState<Record<string, Partial<AlertRule>>>({});
+  const get = <K extends keyof AlertRule>(r: AlertRule, k: K) => (edits[r.id]?.[k] ?? r[k]) as AlertRule[K];
+  const set = (r: AlertRule, patch: Partial<AlertRule>) => setEdits((e) => ({ ...e, [r.id]: { ...e[r.id], ...patch } }));
+
+  async function save(r: AlertRule) {
+    const patch = edits[r.id];
+    if (!patch) return;
+    if (patch.channels && !patch.channels.includes('in_app')) throw new Error('In-app delivery is always on, so the notification centre stays complete.');
+    await source.updateAlertRule(user, r.id, patch);
+    setEdits((e) => {
+      const { [r.id]: _drop, ...rest } = e;
+      void _drop;
+      return rest;
+    });
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div>
+          <CardTitle>Alert rules</CardTitle>
+          <CardDescription>
+            Severity is the base level; some rules raise it (for example Limit exceeded becomes Critical above 2× the limit or in a Critical-tier zone).
+            Cooldown stops a resolved alert from coming straight back. Email and SMS are sent only when a provider is configured on the server
+            {source.kind === 'demo' ? '; demo mode delivers in-app and local browser notifications only' : ''}.
+          </CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <THead>
+            <TR>
+              <TH>Rule</TH>
+              <TH>On</TH>
+              <TH>Base severity</TH>
+              <TH>Cooldown</TH>
+              <TH>Channels</TH>
+              <TH />
+            </TR>
+          </THead>
+          <TBody>
+            {snap.alertRules.map((r) => (
+              <TR key={r.id}>
+                <TD className="max-w-sm">
+                  <div className="font-medium">{r.name}</div>
+                  <div className="text-xs text-muted-foreground">{r.condition.description}</div>
+                </TD>
+                <TD>
+                  <input type="checkbox" aria-label={`${r.name} enabled`} checked={get(r, 'enabled')} onChange={(e) => set(r, { enabled: e.target.checked })} />
+                </TD>
+                <TD>
+                  <Select aria-label={`${r.name} severity`} value={get(r, 'severity')} onChange={(e) => set(r, { severity: e.target.value as AlertSeverity })}>
+                    {(['info', 'warning', 'high', 'critical'] as const).map((sv) => (
+                      <option key={sv} value={sv}>{sv}</option>
+                    ))}
+                  </Select>
+                </TD>
+                <TD>
+                  <div className="flex items-center gap-1">
+                    <Input
+                      aria-label={`${r.name} cooldown minutes`}
+                      type="number"
+                      min={0}
+                      className="h-8 w-20"
+                      value={String(get(r, 'cooldown_minutes'))}
+                      onChange={(e) => set(r, { cooldown_minutes: Number(e.target.value) })}
+                    />
+                    <span className="text-xs text-muted-foreground">min</span>
+                  </div>
+                </TD>
+                <TD>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1">
+                    {CHANNELS.map((c) => {
+                      const chs = get(r, 'channels');
+                      return (
+                        <label key={c.key} className="flex items-center gap-1 text-xs">
+                          <input
+                            type="checkbox"
+                            checked={chs.includes(c.key)}
+                            disabled={c.key === 'in_app'}
+                            onChange={(e) => set(r, { channels: e.target.checked ? [...chs, c.key] : chs.filter((x) => x !== c.key) })}
+                          />
+                          {c.label}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </TD>
+                <TD>
+                  <Button size="sm" disabled={busy || !edits[r.id]} onClick={() => run(() => save(r), `${r.name} saved.`)}>
+                    Save
+                  </Button>
+                </TD>
+              </TR>
+            ))}
+          </TBody>
+        </Table>
+        <div className="mt-2">
+          <Feedback msg={msg} />
+        </div>
       </CardContent>
     </Card>
   );

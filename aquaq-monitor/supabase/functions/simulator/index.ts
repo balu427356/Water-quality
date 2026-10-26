@@ -1,6 +1,6 @@
 // Simulator Edge Function (v1 only; replaced by the boat gateway in production).
 //
-//   POST {"action":"tick"}  with header x-sim-secret: $SIM_CRON_SECRET
+//   POST {"action":"tick"}  with header x-cron-secret: $CRON_SECRET
 //       Called every minute by pg_cron. Runs ~19 telemetry steps 3 s apart, writing
 //       boat_telemetry, readings, boats, stations, sensors and waypoints, then saves sim_state.
 //   POST {"action":"inject_drift" | "inject_plume" | "drop_link" | "drain_battery" | "clear_injections" | "reset", ...}
@@ -31,7 +31,7 @@ const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-sim-secret',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
   const body = await req.json().catch(() => ({}));
 
   if (body.action === 'tick') {
-    if (req.headers.get('x-sim-secret') !== Deno.env.get('SIM_CRON_SECRET')) return json({ error: 'forbidden' }, 403);
+    if (req.headers.get('x-cron-secret') !== Deno.env.get('CRON_SECRET')) return json({ error: 'forbidden' }, 403);
     return json(await tick());
   }
 

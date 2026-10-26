@@ -12,7 +12,6 @@ import { PageHeader } from '@/features/layout/AppShell';
 import { DAY_MS, fmtDate, fmtTime } from '@/lib/time';
 import { crossCheck } from './crossCheck';
 
-const CALIBRATION_DUE_DAYS = 15;
 
 export function SensorsPage() {
   const snap = useSnapshot();
@@ -28,7 +27,7 @@ export function SensorsPage() {
 
   const rows = snap.sensors.map((s) => {
     const days = Math.floor((now - new Date(s.last_calibrated_at).getTime()) / DAY_MS);
-    return { s, days, due: days > CALIBRATION_DUE_DAYS, low: counts.get(`${s.owner_id}|${s.parameter_key}`) ?? 0 };
+    return { s, days, due: days > snap.settings.calibration_due_days, low: counts.get(`${s.owner_id}|${s.parameter_key}`) ?? 0 };
   });
 
   return (
@@ -37,7 +36,7 @@ export function SensorsPage() {
       <div className="grid gap-3 px-4 md:px-6">
         <ChartCard
           title="Sensors"
-          description={`Calibration is due after ${CALIBRATION_DUE_DAYS} days. Low-trust count = readings with T below ${snap.settings.trust_threshold} in the last 30 days.`}
+          description={`Calibration is due after ${snap.settings.calibration_due_days} days. Low-trust count = readings with T below ${snap.settings.trust_threshold} in the last 30 days.`}
           loading={lowTrust.loading}
           csv={{ filename: 'sensors', rows: () => rows.map((r) => ({ sensor: r.s.id, owner: owners[r.s.owner_id], parameter: r.s.parameter_key, health: r.s.health, last_calibrated: r.s.last_calibrated_at, days_since_calibration: r.days, low_trust_30d: r.low, maintenance_flag: r.s.maintenance_flag })) }}
         >
@@ -125,7 +124,7 @@ export function SensorsPage() {
         </div>
 
         <p className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
-          Automatic maintenance flags (3 low-trust confirmation checks in a row), maintenance tasks and the pre-mission checklist are built in Phases 2–3.
+          Maintenance flags are set automatically when a probe fails 3 confirmation checks in a row. Maintenance tasks and the pre-mission checklist arrive in Phase 3.
         </p>
       </div>
     </div>

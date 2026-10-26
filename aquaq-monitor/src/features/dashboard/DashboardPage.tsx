@@ -12,6 +12,7 @@ import { LimitBadge, TierBadge, TrendIndicator } from '@/components/status';
 import { Freshness, StaleDim } from '@/components/Freshness';
 import { LakeMap } from '@/components/map/LakeMap';
 import { PageHeader } from '@/features/layout/AppShell';
+import { SeverityBadge } from '@/features/alerts/alertMeta';
 import { fmtCountdown, fmtDate, fmtDateTime } from '@/lib/time';
 import { useNow } from '@/lib/useNow';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,12 @@ export function DashboardPage() {
   const latest = latestPerParameter(snap);
   const next = nextSurveyAt(snap);
   const survey = latestSurvey(snap);
+  const alertCounts = { critical: 0, high: 0, warning: 0, info: 0, unacknowledged: 0 };
+  for (const a of snap.alerts) {
+    if (a.status === 'resolved') continue;
+    alertCounts[a.severity] += 1;
+    if (a.status === 'open') alertCounts.unacknowledged += 1;
+  }
   const linkLost = secondsSince(boat?.last_seen, now) > snap.settings.link_loss_timeout_s;
   const lab = useReadings(survey ? { surveyIds: [survey.id], sourceTypes: ['lab'] } : null);
   const latestLab = useMemo(() => {
@@ -48,14 +55,20 @@ export function DashboardPage() {
         </StatusCard>
 
         <StatusCard icon={Bell} title="Open alerts">
-          <div className="flex gap-2 text-sm">
-            {(['critical', 'high', 'warning', 'info'] as const).map((s) => (
-              <span key={s} className="rounded border px-1.5 py-0.5 text-xs capitalize text-muted-foreground">
-                {s} 0
-              </span>
+          <div className="flex flex-wrap gap-1.5">
+            {(['critical', 'high', 'warning', 'info'] as const).map((sev) => (
+              <Link key={sev} to="/alerts" className="inline-flex items-center gap-1 text-sm" aria-label={`${alertCounts[sev]} unresolved ${sev} alerts`}>
+                <SeverityBadge severity={sev} />
+                <span className="font-semibold tabular-nums">{alertCounts[sev]}</span>
+              </Link>
             ))}
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">Alert engine arrives in Phase 2.</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {alertCounts.unacknowledged} not acknowledged ·{' '}
+            <Link to="/alerts" className="text-primary hover:underline">
+              Notification centre
+            </Link>
+          </p>
         </StatusCard>
 
         <StatusCard icon={Ship} title={`Boat ${boat?.name ?? ''}`}>

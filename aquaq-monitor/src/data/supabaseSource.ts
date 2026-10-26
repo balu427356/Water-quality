@@ -2,7 +2,7 @@
 // Small tables are loaded fully and refreshed on change; readings and telemetry stream in.
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { DEFAULT_SETTINGS, type AuditEntry, type BoatTelemetry, type Parameter, type Profile, type Reading, type Settings } from '@shared/types.ts';
+import { DEFAULT_SETTINGS, type Alert, type AlertRule, type AuditEntry, type BoatTelemetry, type Parameter, type Profile, type Reading, type Settings } from '@shared/types.ts';
 import type { SimState } from '@shared/simCore.ts';
 import { TRAIL_WINDOW_MS, emptySnapshot, type DataSource, type ReadingQuery, type SimAction, type Snapshot } from './source';
 
@@ -46,7 +46,7 @@ export class SupabaseSource implements DataSource {
     if (!(await this.client.auth.getSession()).data.session) return; // RLS needs a signed-in user
     this.started = true;
     await Promise.all((Object.keys(TABLES) as TableName[]).map((t) => this.loadTable(t)));
-    await Promise.all([this.loadSettings(), this.loadLive(), this.loadSim()]);
+    await Promise.all([this.loadSettings(), this.loadLive(), this.loadSim(), this.loadAlerts(), this.loadAlertRules(), this.loadProfiles()]);
     this.snap = { ...this.snap, ready: true };
     this.emit();
     this.subscribeRealtime();
@@ -65,6 +65,28 @@ export class SupabaseSource implements DataSource {
   private async loadSettings() {
     const { data } = await this.client.from('app_settings').select('value').eq('id', 1).maybeSingle();
     this.snap = { ...this.snap, settings: { ...DEFAULT_SETTINGS, ...((data?.value as Partial<Settings>) ?? {}) } };
+  }
+
+  private async loadAlerts() {
+    const since = new Date(Date.now() - 7 * 86_400_000).toISOString();
+    const { data, error } = await this.client
+      .from('alerts')
+      .select('*')
+      .or(`status.neq.resolved,resolved_at.gte.${since}`)
+      .order('updated_at', { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    this.snap = { ...this.snap, alerts: (data ?? []) as Alert[] };
+  }
+
+  private async loadAlertRules() {
+    const { data } = await this.client.from('alert_rules').select('*').order('id');
+    this.snap = { ...this.snap, alertRules: (data ?? []) as AlertRule[] };
+  }
+
+  private async loadProfiles() {
+    const { data } = await this.client.from('profiles').select('id,email,full_name,role');
+    this.snap = { ...this.snap, profiles: (data ?? []) as Profile[] };
   }
 
   private async loadSim() {
@@ -100,6 +122,18 @@ export class SupabaseSource implements DataSource {
     }
     ch.on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, () => {
       void this.loadSettings().then(() => this.emit());
+    });
+    ch.on('postgres_changes', { event: '*', schema: 'public', table: 'alerts' }, (p) => {
+      const a = p.new as Alert;
+      if (!a?.id) return;
+      const rest = this.snap.alerts.filter((x) => x.id !== a.id);
+      const rank = { open: 0, acknowledged: 1, resolved: 2 } as const;
+      const alerts = [a, ...rest].sort((x, y) => rank[x.status] - rank[y.status] || (x.updated_at < y.updated_at ? 1 : -1));
+      this.snap = { ...this.snap, alerts };
+      this.emit();
+    });
+    ch.on('postgres_changes', { event: '*', schema: 'public', table: 'alert_rules' }, () => {
+      void this.loadAlertRules().then(() => this.emit());
     });
     ch.on('postgres_changes', { event: '*', schema: 'public', table: 'sim_state' }, (p) => {
       this.applySim((p.new as { state?: SimState })?.state);
@@ -205,6 +239,31 @@ export class SupabaseSource implements DataSource {
   async simControl(_user: Profile, a: SimAction) {
     // The Edge Function checks the caller's role from their JWT and writes the audit entry.
     const { error } = await this.client.functions.invoke('simulator', { body: a });
+    if (error) throw error;
+  }
+
+  async acknowledgeAlert(_user: Profile, id: string) {
+    // Server function checks the role and the state transition and writes the audit entry.
+    const { error } = await this.client.rpc('acknowledge_alert', { p_id: id });
+    if (error) throw new Error(error.message);
+  }
+
+  async resolveAlert(_user: Profile, id: string, note: string) {
+    const { error } = await this.client.rpc('resolve_alert', { p_id: id, p_note: note });
+    if (error) throw new Error(error.message);
+  }
+
+  async updateAlertRule(user: Profile, id: string, patch: Partial<AlertRule>) {
+    const { error } = await this.client.from('alert_rules').update(patch).eq('id', id);
+    if (error) throw error;
+    await this.audit(user, 'alert_rule.update', 'alert_rules', id, { patch });
+  }
+
+  async savePushSubscription(user: Profile, sub: PushSubscriptionJSON, enabled: boolean) {
+    if (!sub.endpoint) throw new Error('Push subscription has no endpoint.');
+    const { error } = enabled
+      ? await this.client.from('push_subscriptions').upsert({ endpoint: sub.endpoint, user_id: user.id, subscription: sub })
+      : await this.client.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
     if (error) throw error;
   }
 

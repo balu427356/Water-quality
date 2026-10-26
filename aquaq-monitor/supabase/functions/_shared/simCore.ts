@@ -24,6 +24,8 @@ export const STATION_INTERVAL_S = 300;
 const LINK_DROP_S = 90;
 const PLUME_DURATION_S = 30 * 60;
 const DRIFT_RAMP_S = 10 * 60;
+/** Fully developed drift per probe: enough to push clean-water readings past the limit. */
+const DRIFT_FULL: Record<string, number> = { ph: 1.6, do: -3.2, turbidity: 4, conductivity: 250, tds: 900, orp: -120 };
 const BATTERY_PCT_PER_100M = 0.6;
 const CHARGE_PCT_PER_S = 0.2;
 
@@ -114,8 +116,7 @@ function pollutionIn(zoneId: string | null, inj: SimInjections, now: number, spe
 function driftBias(key: string, inj: SimInjections, now: number, speed: number): number {
   if (!inj.drift || inj.drift.parameter_key !== key) return 0;
   const ramp = Math.min(1, (((now - inj.drift.started_at) / 1000) * speed) / DRIFT_RAMP_S);
-  const sign = key === 'do' || key === 'orp' ? -1 : 1;
-  return sign * BASELINE[key] * 0.45 * ramp;
+  return (DRIFT_FULL[key] ?? -BASELINE[key] * 0.45) * ramp;
 }
 
 let readingSeq = 0;
@@ -160,6 +161,7 @@ export function stepSim(prev: SimState, world: SimWorld, now: number, rng: () =>
 
   // ---- movement
   let travelled = 0;
+  const confirmAt: LatLon[] = [];
   if (!failsafeHold && (s.phase === 'mission' || s.phase === 'returning')) {
     let budget = CRUISE_SPEED_MPS * dt;
     while (budget > 0) {
@@ -185,6 +187,7 @@ export function stepSim(prev: SimState, world: SimWorld, now: number, rng: () =>
       const wp = s.waypoints[s.target_idx];
       wp.status = 'reached';
       events.push({ type: 'waypoint_reached', seq: wp.seq });
+      if (wp.action === 'confirm_sample') confirmAt.push([wp.lat, wp.lon]);
       if (s.target_idx < s.waypoints.length - 1) {
         s.target_idx += 1;
       } else {
@@ -274,7 +277,38 @@ export function stepSim(prev: SimState, world: SimWorld, now: number, rng: () =>
         trust_T: anomalous ? round(clamp01((suspect ? 0.3 : 0.88) + gaussian(rng) * 0.04), 2) : null,
         imputed: false,
         survey_id: null,
+        confirmation: false,
       });
+    }
+  }
+
+  // ---- confirmation samples: an independent measurement (fresh probe / grab sample), so probe drift does not apply
+  if (!linkDown) {
+    for (const pos of confirmAt) {
+      const cz = zoneAt(pos, world.zones);
+      const cp = pollutionIn(cz?.id ?? null, s.injections, now, s.speed_factor);
+      for (const key of BOAT_PROBES) {
+        const param = world.parameters.find((p) => p.key === key);
+        if (!param?.enabled) continue;
+        const value = modelValue(key, cp, rng, diurnal(key, now));
+        const anomalous = limitStatus(value, param, settings.near_limit_pct) === 'out';
+        readings.push({
+          id: newId('C', now),
+          source_type: 'boat',
+          source_id: b.id,
+          ts: nowIso,
+          lat: pos[0],
+          lon: pos[1],
+          zone_id: cz?.id ?? null,
+          parameter_key: key,
+          value,
+          edge_anomaly_flag: anomalous,
+          trust_T: anomalous ? round(clamp01(0.92 + gaussian(rng) * 0.03), 2) : null,
+          imputed: false,
+          survey_id: null,
+          confirmation: true,
+        });
+      }
     }
   }
 
@@ -302,6 +336,7 @@ export function stepSim(prev: SimState, world: SimWorld, now: number, rng: () =>
           trust_T: anomalous ? round(clamp01(0.85 + gaussian(rng) * 0.04), 2) : null,
           imputed: false,
           survey_id: null,
+          confirmation: false,
         });
       }
     }

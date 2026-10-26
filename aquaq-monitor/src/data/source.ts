@@ -1,4 +1,6 @@
 import type {
+  Alert,
+  AlertRule,
   AuditEntry,
   Boat,
   BoatTelemetry,
@@ -40,6 +42,11 @@ export interface Snapshot {
   recentReadings: Reading[];
   /** Latest reading per source and parameter. */
   latestBySource: Record<string, Record<string, Reading>>;
+  /** Alerts, newest activity first. Resolved alerts older than 7 days are not loaded. */
+  alerts: Alert[];
+  alertRules: AlertRule[];
+  /** Users, for showing who acknowledged or resolved an alert. */
+  profiles: Profile[];
   /** Simulator state, when a simulator is running. */
   sim: { phase: SimPhase; phase_reason: string | null; injections: SimInjections; speed_factor: number } | null;
 }
@@ -80,6 +87,12 @@ export interface DataSource {
   updateSettings(user: Profile, patch: Partial<Settings>): Promise<void>;
   simControl(user: Profile, a: SimAction): Promise<void>;
   listAudit(limit?: number): Promise<AuditEntry[]>;
+
+  acknowledgeAlert(user: Profile, id: string): Promise<void>;
+  resolveAlert(user: Profile, id: string, note: string): Promise<void>;
+  updateAlertRule(user: Profile, id: string, patch: Partial<AlertRule>): Promise<void>;
+  /** Store or remove this device's web-push subscription for the user. */
+  savePushSubscription(user: Profile, sub: PushSubscriptionJSON, enabled: boolean): Promise<void>;
 }
 
 export const TRAIL_WINDOW_MS = 30 * 60_000;
@@ -102,6 +115,9 @@ export function emptySnapshot(settings: Settings): Snapshot {
     boatTrail: [],
     recentReadings: [],
     latestBySource: {},
+    alerts: [],
+    alertRules: [],
+    profiles: [],
     sim: null,
   };
 }

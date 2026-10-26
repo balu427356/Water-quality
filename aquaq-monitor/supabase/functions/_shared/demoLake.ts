@@ -154,7 +154,7 @@ const DAY = 86_400_000;
 
 export function demoSensors(now: number): Sensor[] {
   const out: Sensor[] = [];
-  const calib: Record<string, number> = { ph: 6, do: 20, temperature: 30, turbidity: 6, conductivity: 6, tds: 6, orp: 9 };
+  const calib: Record<string, number> = { ph: 6, do: 20, temperature: 12, turbidity: 6, conductivity: 6, tds: 6, orp: 9 };
   for (const k of BOAT_PROBES) {
     out.push({
       id: `B1-${k}`,
@@ -365,6 +365,7 @@ export function generateHistory(now: number, seed = 42): DemoHistory {
             trust_T: t == null ? null : round(t, 2),
             imputed: false,
             survey_id: surveyId,
+            confirmation: false,
           });
           sums[key] ??= { s: 0, n: 0 };
           sums[key].s += value;
@@ -443,6 +444,7 @@ export function generateStationHistory(now: number, days = 90, seed = 7): Readin
           trust_T: null,
           imputed: false,
           survey_id: null,
+          confirmation: false,
         });
       }
     }

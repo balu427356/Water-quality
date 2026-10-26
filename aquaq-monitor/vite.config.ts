@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg'],
+      includeAssets: ['icon.svg', 'push-sw.js'],
       manifest: {
         name: 'AquaQ Monitor',
         short_name: 'AquaQ',
@@ -26,6 +26,8 @@ export default defineConfig({
       workbox: {
         // Map tiles and API data are live; only cache the app shell.
         globPatterns: ['**/*.{js,css,html,svg}'],
+        // Push and notification-click handlers for alerts.
+        importScripts: ['push-sw.js'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
     }),

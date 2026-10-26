@@ -5,7 +5,7 @@ import { crossCheck } from './crossCheck';
 const st: Station = { id: 'S1', name: 'S1', position: [12.97, 79.15], zone_id: 'A', status: 'online', last_seen: '' };
 const r = (o: Partial<Reading>): Reading => ({
   id: Math.random().toString(), source_type: 'boat', source_id: 'B1', ts: '2026-10-26T04:00:00Z', lat: 12.97, lon: 79.15, zone_id: 'A',
-  parameter_key: 'do', value: 5, edge_anomaly_flag: false, trust_T: null, imputed: false, survey_id: null, ...o,
+  parameter_key: 'do', value: 5, edge_anomaly_flag: false, trust_T: null, imputed: false, survey_id: null, confirmation: false, ...o,
 });
 
 describe('crossCheck', () => {

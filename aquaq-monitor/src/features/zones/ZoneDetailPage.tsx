@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { AlertTriangle, ArrowLeft, FlaskConical, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Bell, FlaskConical, ShieldCheck } from 'lucide-react';
 import type { RiskTier } from '@shared/types.ts';
 import { useSnapshot } from '@/data/DataProvider';
 import { useReadings } from '@/data/useReadings';
@@ -23,6 +23,7 @@ export function ZoneDetailPage() {
   const summary = zoneSummaries(snap).find((s) => s.zone.id === zoneId);
   const history = zoneHistory(snap, zoneId).slice(-6);
   const [since] = useState(() => new Date(Date.now() - 90 * DAY_MS).toISOString());
+  const [showAnomalies, setShowAnomalies] = useState(true);
   const anomalies = useReadings(zone ? { zoneIds: [zone.id], from: since, maxTrust: 1.01 } : null);
   const tiers = Object.fromEntries(zoneSummaries(snap).map((s) => [s.zone.id, s.score?.risk_tier])) as Record<string, RiskTier | undefined>;
 
@@ -34,15 +35,23 @@ export function ZoneDetailPage() {
   }, [snap.missions, snap.missionZones, zoneId]);
 
   const timeline = useMemo(() => {
-    type Item = { ts: string; kind: 'survey' | 'anomaly'; text: string; lowTrust?: boolean };
+    type Item = { ts: string; kind: 'survey' | 'anomaly' | 'alert'; text: string; lowTrust?: boolean; alertId?: string };
     const items: Item[] = history.map((h) => ({
       ts: h.survey.started_at,
       kind: 'survey',
       text: `Survey ${h.survey.id}: R ${h.score.risk_R.toFixed(2)}, T ${h.score.trust_T.toFixed(2)}, ${h.score.risk_tier}${h.score.trust_gate === 'lab_review' ? ' (sent to lab review)' : ''}`,
     }));
+    for (const a of snap.alerts.filter((x) => x.zone_id === zoneId)) {
+      items.push({
+        ts: a.created_at,
+        kind: 'alert',
+        alertId: a.id,
+        text: `${a.severity.toUpperCase()} alert: ${a.title}${a.count > 1 ? ` (×${a.count})` : ''} · ${a.status}`,
+      });
+    }
     const groups = new Map<string, typeof anomalies.data>();
     for (const r of anomalies.data) groups.set(r.ts.slice(0, 16), [...(groups.get(r.ts.slice(0, 16)) ?? []), r]);
-    for (const rs of [...groups.values()].slice(-40)) {
+    for (const rs of showAnomalies ? [...groups.values()].slice(-40) : []) {
       const low = rs.every((r) => (r.trust_T ?? 0) < snap.settings.trust_threshold);
       items.push({
         ts: rs[0].ts,
@@ -52,7 +61,7 @@ export function ZoneDetailPage() {
       });
     }
     return items.sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 60);
-  }, [history, anomalies.data, snap]);
+  }, [history, anomalies.data, snap, zoneId, showAnomalies]);
 
   if (!zone) return <EmptyState text="Zone not found." />;
   const score = summary?.score;
@@ -138,7 +147,10 @@ export function ZoneDetailPage() {
         <Card>
           <CardHeader><CardTitle>Timeline</CardTitle></CardHeader>
           <CardContent>
-            <p className="mb-2 text-xs text-muted-foreground">Surveys and anomalies (last 90 days). Alerts join this timeline in Phase 2.</p>
+            <p className="mb-2 text-xs text-muted-foreground">Surveys, alerts and anomalies (last 90 days).</p>
+            <label className="mb-2 flex items-center gap-2 text-xs">
+              <input type="checkbox" checked={showAnomalies} onChange={(e) => setShowAnomalies(e.target.checked)} /> Include raw anomalies
+            </label>
             {anomalies.loading ? (
               <LoadingState />
             ) : timeline.length === 0 ? (
@@ -146,11 +158,18 @@ export function ZoneDetailPage() {
             ) : (
               <ol className="max-h-96 space-y-2 overflow-y-auto text-sm">
                 {timeline.map((t, i) => (
-                  <li key={i} className="border-l-2 pl-3" style={{ borderColor: t.kind === 'survey' ? '#0e7490' : t.lowTrust ? '#d97706' : '#dc2626' }}>
+                  <li key={i} className="border-l-2 pl-3" style={{ borderColor: t.kind === 'survey' ? '#0e7490' : t.kind === 'alert' ? '#7c3aed' : t.lowTrust ? '#d97706' : '#dc2626' }}>
                     <div className="text-xs text-muted-foreground">{fmtDateTime(t.ts)}</div>
                     <div className="flex items-start gap-1">
                       {t.kind === 'anomaly' && <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />}
-                      {t.text}
+                      {t.kind === 'alert' && <Bell className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />}
+                      {t.alertId ? (
+                        <Link to={`/alerts?id=${t.alertId}`} className="text-primary hover:underline">
+                          {t.text}
+                        </Link>
+                      ) : (
+                        t.text
+                      )}
                     </div>
                   </li>
                 ))}

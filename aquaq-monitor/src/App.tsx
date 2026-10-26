@@ -11,6 +11,7 @@ import { AnalyticsPage } from '@/features/analytics/AnalyticsPage';
 import { ZoneDetailPage } from '@/features/zones/ZoneDetailPage';
 import { SensorsPage } from '@/features/sensors/SensorsPage';
 import { MissionsPage } from '@/features/missions/MissionsPage';
+import { AlertsPage } from '@/features/alerts/AlertsPage';
 import { SettingsPage } from '@/features/settings/SettingsPage';
 
 function RequireAuth({ children, roles }: { children: ReactNode; roles?: Role[] }) {
@@ -42,6 +43,7 @@ export default function App() {
       >
         <Route index element={<DashboardPage />} />
         <Route path="map" element={<LiveMapPage />} />
+        <Route path="alerts" element={<AlertsPage />} />
         <Route path="missions" element={<MissionsPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="zones/:zoneId" element={<ZoneDetailPage />} />

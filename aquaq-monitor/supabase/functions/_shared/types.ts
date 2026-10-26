@@ -105,6 +105,8 @@ export interface Reading {
   trust_T: number | null;
   imputed: boolean;
   survey_id: string | null;
+  /** Independent confirmation sample (taken at a confirm_sample waypoint), not the routine probe reading. */
+  confirmation: boolean;
 }
 
 export interface BoatTelemetry {
@@ -184,6 +186,69 @@ export interface Waypoint {
   status: WaypointStatus;
 }
 
+export type AlertSeverity = 'info' | 'warning' | 'high' | 'critical';
+export type AlertCategory = 'water_quality' | 'sensor' | 'boat' | 'mission' | 'system';
+export type AlertStatus = 'open' | 'acknowledged' | 'resolved';
+export type AlertChannel = 'in_app' | 'push' | 'email' | 'sms';
+
+export type AlertRuleId =
+  | 'limit_exceeded'
+  | 'near_limit'
+  | 'possible_sensor_fault'
+  | 'confirmed_pollution'
+  | 'fault_confirmed'
+  | 'zone_tier_rose'
+  | 'station_trigger'
+  | 'low_battery'
+  | 'link_lost'
+  | 'geofence'
+  | 'command_failed'
+  | 'fallback_used'
+  | 'calibration_due';
+
+export interface AlertRule {
+  id: AlertRuleId;
+  name: string;
+  enabled: boolean;
+  /** Human-readable condition plus any tunable values the engine reads. */
+  condition: { description: string } & Record<string, unknown>;
+  /** Base severity; some rules raise it (for example to critical above 2× the limit). */
+  severity: AlertSeverity;
+  channels: AlertChannel[];
+  cooldown_minutes: number;
+}
+
+export interface Alert {
+  id: string;
+  rule_id: AlertRuleId;
+  /** Alerts with the same key (rule + zone + parameter/source) are merged with a count. */
+  dedup_key: string;
+  severity: AlertSeverity;
+  category: AlertCategory;
+  title: string;
+  message: string;
+  suggested_action: string;
+  zone_id: string | null;
+  source_id: string | null;
+  parameter_key: string | null;
+  value: number | null;
+  limit_text: string | null;
+  created_at: string;
+  /** Time of the latest merged occurrence. */
+  updated_at: string;
+  status: AlertStatus;
+  acknowledged_by: string | null;
+  acknowledged_at: string | null;
+  resolved_by: string | null;
+  resolved_at: string | null;
+  resolution_note: string | null;
+  count: number;
+  escalated_at: string | null;
+  escalation_count: number;
+  /** Follow-up the app should offer, e.g. proposing an early mission. */
+  action: 'propose_early_mission' | null;
+}
+
 export interface AuditEntry {
   id: string;
   user_id: string;
@@ -203,6 +268,11 @@ export interface Settings {
   near_limit_pct: number;
   crosscheck_distance_m: number;
   crosscheck_tolerance_pct: number;
+  /** Re-send unacknowledged critical alerts to all operators and admins after this long. */
+  escalation_minutes: number;
+  /** Boat within this distance of the geofence edge raises a warning. */
+  geofence_warning_m: number;
+  calibration_due_days: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -214,4 +284,7 @@ export const DEFAULT_SETTINGS: Settings = {
   near_limit_pct: 10,
   crosscheck_distance_m: 20,
   crosscheck_tolerance_pct: 15,
+  escalation_minutes: 15,
+  geofence_warning_m: 10,
+  calibration_due_days: 15,
 };

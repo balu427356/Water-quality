@@ -16,6 +16,7 @@ import {
   generateStationHistory,
 } from '../supabase/functions/_shared/demoLake.ts';
 import { initialSimState } from '../supabase/functions/_shared/simCore.ts';
+import { DEFAULT_ALERT_RULES, emptyMemory } from '../supabase/functions/_shared/alertEngine.ts';
 import { DEFAULT_SETTINGS } from '../supabase/functions/_shared/types.ts';
 
 const url = process.env.SUPABASE_URL;
@@ -50,6 +51,7 @@ async function main() {
   await upsert('zones', demoZones());
   await upsert('parameters', demoParameters());
   await upsert('app_settings', [{ id: 1, value: DEFAULT_SETTINGS }]);
+  await upsert('alert_rules', DEFAULT_ALERT_RULES);
   const boat = demoBoat(iso);
   await upsert('boats', [boat]);
   await upsert('stations', demoStations(iso));
@@ -65,6 +67,8 @@ async function main() {
   await upsert('readings', history.readings);
   await upsert('readings', generateStationHistory(now));
   await upsert('sim_state', [{ boat_id: boat.id, state: initialSimState(boat, mission.waypoints, now) }]);
+  // Start the alert engine after the seeded history so it doesn't alert on 90 days of old data.
+  await upsert('engine_state', [{ id: 1, memory: emptyMemory(), cursor: new Date().toISOString() }]);
 
   console.log('Creating demo users…');
   for (const u of USERS) {

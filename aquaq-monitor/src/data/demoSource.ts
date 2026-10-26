@@ -26,7 +26,8 @@ import {
   stepSim,
   type SimState,
 } from '@shared/simCore.ts';
-import { DEFAULT_SETTINGS, type AuditEntry, type Parameter, type Profile, type Reading, type Settings } from '@shared/types.ts';
+import { DEFAULT_ALERT_RULES, acknowledge, emptyMemory, resolve, runEngine, type EngineMemory } from '@shared/alertEngine.ts';
+import { DEFAULT_SETTINGS, type Alert, type AlertRule, type AuditEntry, type Parameter, type Profile, type Reading, type Settings } from '@shared/types.ts';
 import { TRAIL_WINDOW_MS, emptySnapshot, matchesQuery, type DataSource, type ReadingQuery, type SimAction, type Snapshot } from './source';
 
 export const DEMO_USERS: (Profile & { password: string })[] = [
@@ -38,6 +39,9 @@ export const DEMO_USERS: (Profile & { password: string })[] = [
 const LS_SESSION = 'aquaq.demo.session';
 const LS_PARAMS = 'aquaq.demo.parameters';
 const LS_SETTINGS = 'aquaq.demo.settings';
+const LS_RULES = 'aquaq.demo.alertRules';
+const LS_PUSH = 'aquaq.demo.pushEnabled';
+const RESOLVED_RETENTION_MS = 7 * 86_400_000;
 const PRE_ROLL_TICKS = (30 * 60) / TELEMETRY_INTERVAL_S; // simulate the last 30 min so the trail is populated
 const MAX_LIVE_READINGS = 60_000;
 
@@ -68,6 +72,8 @@ export class DemoSource implements DataSource {
   private rng = mulberry32(2026);
   private timer: number | null = null;
   private audit: AuditEntry[] = [];
+  private engineMemory: EngineMemory = emptyMemory();
+  private alertSeq = 0;
 
   async init() {
     if (this.snap.ready) return;
@@ -86,6 +92,8 @@ export class DemoSource implements DataSource {
     this.history = [...hist.readings, ...generateStationHistory(now)].sort((a, b) => (a.ts < b.ts ? -1 : 1));
     this.live = [];
     this.rng = mulberry32(2026);
+    this.engineMemory = emptyMemory();
+    const savedRules = lsGet<Record<string, Partial<AlertRule>>>(LS_RULES) ?? {};
 
     this.snap = {
       ...emptySnapshot(settings),
@@ -101,6 +109,8 @@ export class DemoSource implements DataSource {
       missions: [mission.mission],
       missionZones: mission.zones,
       waypoints: mission.waypoints,
+      alertRules: DEFAULT_ALERT_RULES.map((r) => ({ ...r, ...(savedRules[r.id] ?? {}) })),
+      profiles: DEMO_USERS.map(strip),
     };
 
     // Pre-roll: run the simulator over the last 30 minutes so the map has a trail and live data.
@@ -161,7 +171,52 @@ export class DemoSource implements DataSource {
         speed_factor: res.state.speed_factor,
       },
     };
+    this.runAlerts(now, res.readings);
     if (emit) this.emit();
+  }
+
+  /** Run the alert rule engine on the readings that just arrived (the same engine the server runs). */
+  private runAlerts(now: number, readings: Reading[]) {
+    const s = this.snap;
+    const res = runEngine(
+      {
+        now,
+        settings: s.settings,
+        rules: s.alertRules,
+        parameters: s.parameters,
+        zones: s.zones,
+        stations: s.stations,
+        sensors: s.sensors,
+        boats: s.boats,
+        surveys: s.surveys,
+        zoneScores: s.zoneScores,
+        missions: s.missions,
+        waterBody: s.waterBody,
+      },
+      this.engineMemory,
+      s.alerts,
+      readings,
+      () => `AL-${String(++this.alertSeq).padStart(4, '0')}`,
+    );
+    this.engineMemory = res.memory;
+    if (!res.created.length && !res.merged.length && !res.escalated.length && !res.sensorUpdates.length) return;
+    const keepAfter = new Date(now - RESOLVED_RETENTION_MS).toISOString();
+    this.snap = {
+      ...this.snap,
+      alerts: sortAlerts(res.alerts.filter((a) => a.status !== 'resolved' || (a.resolved_at ?? '') >= keepAfter)),
+      sensors: res.sensorUpdates.length
+        ? this.snap.sensors.map((x) => ({ ...x, ...(res.sensorUpdates.find((u) => u.id === x.id) ?? {}) }))
+        : this.snap.sensors,
+    };
+  }
+
+  private updateAlert(id: string, fn: (a: Alert) => Alert) {
+    const a = this.snap.alerts.find((x) => x.id === id);
+    if (!a) throw new Error('Alert not found.');
+    const next = fn(a);
+    this.snap = { ...this.snap, alerts: sortAlerts(this.snap.alerts.map((x) => (x.id === id ? next : x))) };
+    this.emit();
+    return next;
   }
 
   private emit() {
@@ -248,10 +303,38 @@ export class DemoSource implements DataSource {
         break;
       case 'reset':
         this.reset(false);
+        this.alertSeq = 0;
         break;
     }
     this.log(user, `simulator.${a.action}`, 'boats', BOAT_ID, { ...a });
     this.tick(now);
+  }
+
+  async acknowledgeAlert(user: Profile, id: string) {
+    requireRole(user, ['operator', 'admin']);
+    const a = this.updateAlert(id, (x) => acknowledge(x, user.id, Date.now()));
+    this.log(user, 'alert.acknowledge', 'alerts', id, { title: a.title });
+  }
+
+  async resolveAlert(user: Profile, id: string, note: string) {
+    requireRole(user, ['operator', 'admin']);
+    const a = this.updateAlert(id, (x) => resolve(x, user.id, note, Date.now()));
+    this.log(user, 'alert.resolve', 'alerts', id, { title: a.title, note: a.resolution_note });
+  }
+
+  async updateAlertRule(user: Profile, id: string, patch: Partial<AlertRule>) {
+    requireRole(user, ['admin']);
+    if (patch.cooldown_minutes != null && (patch.cooldown_minutes < 0 || !Number.isFinite(patch.cooldown_minutes))) throw new Error('Cooldown must be 0 or more minutes.');
+    this.snap = { ...this.snap, alertRules: this.snap.alertRules.map((r) => (r.id === id ? { ...r, ...patch } : r)) };
+    const saved = lsGet<Record<string, Partial<AlertRule>>>(LS_RULES) ?? {};
+    lsSet(LS_RULES, { ...saved, [id]: { ...(saved[id] ?? {}), ...patch } });
+    this.log(user, 'alert_rule.update', 'alert_rules', id, { patch });
+    this.emit();
+  }
+
+  async savePushSubscription(user: Profile, _sub: PushSubscriptionJSON, enabled: boolean) {
+    // Demo mode has no push server: notifications are shown locally by the service worker.
+    lsSet(LS_PUSH, enabled ? user.email : null);
   }
 
   async listAudit(limit = 100) {
@@ -269,6 +352,12 @@ export class DemoSource implements DataSource {
 
 function strip(u: Profile & { password: string }): Profile {
   return { id: u.id, email: u.email, full_name: u.full_name, role: u.role };
+}
+
+/** Open first, then acknowledged, then resolved; newest activity first within each. */
+export function sortAlerts(alerts: Alert[]): Alert[] {
+  const rank = { open: 0, acknowledged: 1, resolved: 2 } as const;
+  return [...alerts].sort((a, b) => rank[a.status] - rank[b.status] || (a.updated_at < b.updated_at ? 1 : -1));
 }
 
 export function requireRole(user: Profile, roles: Profile['role'][]) {
