@@ -1,0 +1,369 @@
+// Supabase-backed data source: Postgres + Auth + RLS + Realtime.
+// Small tables are loaded fully and refreshed on change; readings and telemetry stream in.
+
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { DEFAULT_SETTINGS, type Alert, type AlertRule, type AuditEntry, type Command, type CommandPayload, type CommandType, type LatLon, type MaintenanceTask, type MissionKind, type Polygon, type SamplingLevel, type BoatTelemetry, type Parameter, type Profile, type Reading, type Settings } from '@shared/types.ts';
+import type { SimState } from '@shared/simCore.ts';
+import { TRAIL_WINDOW_MS, emptySnapshot, type DataSource, type ReadingQuery, type SimAction, type Snapshot } from './source';
+
+const TABLES = {
+  water_bodies: 'waterBody',
+  zones: 'zones',
+  parameters: 'parameters',
+  boats: 'boats',
+  stations: 'stations',
+  sensors: 'sensors',
+  surveys: 'surveys',
+  zone_scores: 'zoneScores',
+  missions: 'missions',
+  mission_zones: 'missionZones',
+  waypoints: 'waypoints',
+} as const;
+type TableName = keyof typeof TABLES;
+
+const ORDER: Partial<Record<TableName, string>> = {
+  surveys: 'started_at',
+  zones: 'code',
+  waypoints: 'seq',
+  missions: 'created_at',
+  zone_scores: 'computed_at',
+};
+
+export class SupabaseSource implements DataSource {
+  readonly kind = 'supabase' as const;
+  private client: SupabaseClient;
+  private snap: Snapshot = emptySnapshot(DEFAULT_SETTINGS);
+  private listeners = new Set<() => void>();
+  private started = false;
+  private profile: Profile | null = null;
+
+  constructor(url: string, anonKey: string) {
+    this.client = createClient(url, anonKey);
+  }
+
+  async init() {
+    if (this.started) return;
+    if (!(await this.client.auth.getSession()).data.session) return; // RLS needs a signed-in user
+    this.started = true;
+    await Promise.all((Object.keys(TABLES) as TableName[]).map((t) => this.loadTable(t)));
+    await Promise.all([
+      this.loadSettings(),
+      this.loadLive(),
+      this.loadSim(),
+      this.loadAlerts(),
+      this.loadAlertRules(),
+      this.loadProfiles(),
+      this.loadCommands(),
+      this.loadMaintenance(),
+    ]);
+    this.snap = { ...this.snap, ready: true };
+    this.emit();
+    this.subscribeRealtime();
+  }
+
+  private async loadTable(t: TableName) {
+    let q = this.client.from(t).select('*');
+    const order = ORDER[t];
+    if (order) q = q.order(order, { ascending: true });
+    const { data, error } = await q;
+    if (error) throw error;
+    const key = TABLES[t];
+    this.snap = { ...this.snap, [key]: key === 'waterBody' ? (data?.[0] ?? null) : (data ?? []) };
+  }
+
+  private async loadSettings() {
+    const { data } = await this.client.from('app_settings').select('value').eq('id', 1).maybeSingle();
+    this.snap = { ...this.snap, settings: { ...DEFAULT_SETTINGS, ...((data?.value as Partial<Settings>) ?? {}) } };
+  }
+
+  private async loadAlerts() {
+    const since = new Date(Date.now() - 7 * 86_400_000).toISOString();
+    const { data, error } = await this.client
+      .from('alerts')
+      .select('*')
+      .or(`status.neq.resolved,resolved_at.gte.${since}`)
+      .order('updated_at', { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    this.snap = { ...this.snap, alerts: (data ?? []) as Alert[] };
+  }
+
+  private async loadAlertRules() {
+    const { data } = await this.client.from('alert_rules').select('*').order('id');
+    this.snap = { ...this.snap, alertRules: (data ?? []) as AlertRule[] };
+  }
+
+  private async loadCommands() {
+    const { data } = await this.client.from('commands').select('*').order('issued_at', { ascending: false }).limit(100);
+    this.snap = { ...this.snap, commands: (data ?? []) as Command[] };
+  }
+
+  private async loadMaintenance() {
+    const { data } = await this.client.from('maintenance_tasks').select('*').order('created_at', { ascending: false }).limit(200);
+    this.snap = { ...this.snap, maintenanceTasks: (data ?? []) as MaintenanceTask[] };
+  }
+
+  private async loadProfiles() {
+    const { data } = await this.client.from('profiles').select('id,email,full_name,role');
+    this.snap = { ...this.snap, profiles: (data ?? []) as Profile[] };
+  }
+
+  private async loadSim() {
+    const { data } = await this.client.from('sim_state').select('state').limit(1).maybeSingle();
+    this.applySim(data?.state as SimState | undefined);
+  }
+
+  private applySim(s: SimState | undefined) {
+    this.snap = {
+      ...this.snap,
+      sim: s ? { phase: s.phase, phase_reason: s.phase_reason, injections: s.injections, speed_factor: s.speed_factor } : null,
+    };
+  }
+
+  private async loadLive() {
+    const since = new Date(Date.now() - TRAIL_WINDOW_MS).toISOString();
+    const [tel, rd] = await Promise.all([
+      this.client.from('boat_telemetry').select('*').gte('ts', since).order('ts', { ascending: true }),
+      this.client.from('readings').select('*').gte('ts', since).in('source_type', ['boat', 'station']).order('ts', { ascending: true }),
+    ]);
+    const readings = (rd.data ?? []) as Reading[];
+    const latest: Snapshot['latestBySource'] = {};
+    for (const r of readings) latest[r.source_id] = { ...(latest[r.source_id] ?? {}), [r.parameter_key]: r };
+    this.snap = { ...this.snap, boatTrail: (tel.data ?? []) as BoatTelemetry[], recentReadings: readings, latestBySource: latest };
+  }
+
+  private subscribeRealtime() {
+    const ch = this.client.channel('aquaq-live');
+    for (const t of Object.keys(TABLES) as TableName[]) {
+      ch.on('postgres_changes', { event: '*', schema: 'public', table: t }, () => {
+        void this.loadTable(t).then(() => this.emit());
+      });
+    }
+    ch.on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, () => {
+      void this.loadSettings().then(() => this.emit());
+    });
+    ch.on('postgres_changes', { event: '*', schema: 'public', table: 'alerts' }, (p) => {
+      const a = p.new as Alert;
+      if (!a?.id) return;
+      const rest = this.snap.alerts.filter((x) => x.id !== a.id);
+      const rank = { open: 0, acknowledged: 1, resolved: 2 } as const;
+      const alerts = [a, ...rest].sort((x, y) => rank[x.status] - rank[y.status] || (x.updated_at < y.updated_at ? 1 : -1));
+      this.snap = { ...this.snap, alerts };
+      this.emit();
+    });
+    ch.on('postgres_changes', { event: '*', schema: 'public', table: 'commands' }, () => {
+      void this.loadCommands().then(() => this.emit());
+    });
+    ch.on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_tasks' }, () => {
+      void this.loadMaintenance().then(() => this.emit());
+    });
+    ch.on('postgres_changes', { event: '*', schema: 'public', table: 'alert_rules' }, () => {
+      void this.loadAlertRules().then(() => this.emit());
+    });
+    ch.on('postgres_changes', { event: '*', schema: 'public', table: 'sim_state' }, (p) => {
+      this.applySim((p.new as { state?: SimState })?.state);
+      this.emit();
+    });
+    ch.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'boat_telemetry' }, (p) => {
+      const cutoff = new Date(Date.now() - TRAIL_WINDOW_MS).toISOString();
+      this.snap = { ...this.snap, boatTrail: [...this.snap.boatTrail.filter((x) => x.ts >= cutoff), p.new as BoatTelemetry] };
+      this.emit();
+    });
+    ch.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'readings' }, (p) => {
+      const r = p.new as Reading;
+      if (r.source_type === 'lab') return;
+      const cutoff = new Date(Date.now() - TRAIL_WINDOW_MS).toISOString();
+      this.snap = {
+        ...this.snap,
+        recentReadings: [...this.snap.recentReadings.filter((x) => x.ts >= cutoff), r],
+        latestBySource: {
+          ...this.snap.latestBySource,
+          [r.source_id]: { ...(this.snap.latestBySource[r.source_id] ?? {}), [r.parameter_key]: r },
+        },
+      };
+      this.emit();
+    });
+    ch.subscribe();
+  }
+
+  private emit() {
+    for (const l of this.listeners) l();
+  }
+
+  getSnapshot = () => this.snap;
+
+  subscribe = (listener: () => void) => {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  };
+
+  // ---------------------------------------------------------------- auth
+
+  private async loadProfile(userId: string): Promise<Profile> {
+    const { data, error } = await this.client.from('profiles').select('id,email,full_name,role').eq('id', userId).single();
+    if (error) throw error;
+    this.profile = data as Profile;
+    return this.profile;
+  }
+
+  async getSession() {
+    const { data } = await this.client.auth.getSession();
+    return data.session ? this.loadProfile(data.session.user.id) : null;
+  }
+
+  async signIn(email: string, password: string) {
+    const { data, error } = await this.client.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
+    const profile = await this.loadProfile(data.user.id);
+    await this.init();
+    return profile;
+  }
+
+  async signOut() {
+    await this.client.auth.signOut();
+    this.profile = null;
+  }
+
+  // ---------------------------------------------------------------- queries & writes
+
+  async queryReadings(q: ReadingQuery) {
+    const pageSize = 1000;
+    const max = q.limit ?? 50_000;
+    const out: Reading[] = [];
+    for (let offset = 0; offset < max; offset += pageSize) {
+      let req = this.client.from('readings').select('*');
+      if (q.zoneIds) req = req.in('zone_id', q.zoneIds);
+      if (q.parameterKeys) req = req.in('parameter_key', q.parameterKeys);
+      if (q.sourceTypes) req = req.in('source_type', q.sourceTypes);
+      if (q.sourceIds) req = req.in('source_id', q.sourceIds);
+      if (q.surveyIds) req = req.in('survey_id', q.surveyIds);
+      if (q.from) req = req.gte('ts', q.from);
+      if (q.to) req = req.lte('ts', q.to);
+      if (q.maxTrust != null) req = req.lt('trust_T', q.maxTrust);
+      const { data, error } = await req.order('ts', { ascending: true }).range(offset, offset + pageSize - 1);
+      if (error) throw error;
+      out.push(...((data ?? []) as Reading[]));
+      if (!data || data.length < pageSize) break;
+    }
+    return out;
+  }
+
+  async updateParameter(user: Profile, id: string, patch: Partial<Parameter>) {
+    const { error } = await this.client.from('parameters').update(patch).eq('id', id);
+    if (error) throw error;
+    await this.audit(user, 'parameter.update', 'parameters', id, { patch });
+  }
+
+  async updateSettings(user: Profile, patch: Partial<Settings>) {
+    const value = { ...this.snap.settings, ...patch };
+    const { error } = await this.client.from('app_settings').upsert({ id: 1, value });
+    if (error) throw error;
+    await this.audit(user, 'settings.update', 'settings', 'global', { patch });
+  }
+
+  async simControl(_user: Profile, a: SimAction) {
+    if (a.action === 'propose_scheduled_now') {
+      await this.op({ action: 'propose_scheduled_now' });
+      return;
+    }
+    // The Edge Function checks the caller's role from their JWT and writes the audit entry.
+    const { error } = await this.client.functions.invoke('simulator', { body: a });
+    if (error) throw error;
+  }
+
+  async acknowledgeAlert(_user: Profile, id: string) {
+    // Server function checks the role and the state transition and writes the audit entry.
+    const { error } = await this.client.rpc('acknowledge_alert', { p_id: id });
+    if (error) throw new Error(error.message);
+  }
+
+  async resolveAlert(_user: Profile, id: string, note: string) {
+    const { error } = await this.client.rpc('resolve_alert', { p_id: id, p_note: note });
+    if (error) throw new Error(error.message);
+  }
+
+  async updateAlertRule(user: Profile, id: string, patch: Partial<AlertRule>) {
+    const { error } = await this.client.from('alert_rules').update(patch).eq('id', id);
+    if (error) throw error;
+    await this.audit(user, 'alert_rule.update', 'alert_rules', id, { patch });
+  }
+
+  async savePushSubscription(user: Profile, sub: PushSubscriptionJSON, enabled: boolean) {
+    if (!sub.endpoint) throw new Error('Push subscription has no endpoint.');
+    const { error } = enabled
+      ? await this.client.from('push_subscriptions').upsert({ endpoint: sub.endpoint, user_id: user.id, subscription: sub })
+      : await this.client.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
+    if (error) throw error;
+  }
+
+  // ---------------------------------------------------------------- missions and boat control
+  // All writes go through the `operations` Edge Function, which runs the shared validation
+  // (command rules, checklist, budget) with the caller's role and writes the audit log.
+
+  private async op<T = unknown>(body: Record<string, unknown>): Promise<T> {
+    const { data, error } = await this.client.functions.invoke('operations', { body });
+    if (error) {
+      // FunctionsHttpError carries the JSON body with our reason.
+      const ctx = (error as { context?: Response }).context;
+      const detail = ctx ? await ctx.json().catch(() => null) : null;
+      const err = new Error(detail?.error ?? error.message) as Error & { checklist?: unknown };
+      if (detail?.checklist) err.checklist = detail.checklist;
+      throw err;
+    }
+    return data as T;
+  }
+
+  async planMission(_user: Profile, input: { kind: MissionKind; energy_budget: number; source_alert_id?: string | null }) {
+    const r = await this.op<{ mission_id: string }>({ action: 'plan', ...input });
+    return r.mission_id;
+  }
+
+  async setMissionZoneLevel(_user: Profile, missionId: string, zoneId: string, level: SamplingLevel) {
+    await this.op({ action: 'set_level', mission_id: missionId, zone_id: zoneId, level });
+  }
+
+  async approveMission(_user: Profile, missionId: string) {
+    await this.op({ action: 'approve', mission_id: missionId });
+  }
+
+  async discardMission(_user: Profile, missionId: string) {
+    await this.op({ action: 'discard', mission_id: missionId });
+  }
+
+  async issueCommand(_user: Profile, type: CommandType, payload: CommandPayload = {}) {
+    const r = await this.op<{ command: Command }>({ action: 'command', type, payload });
+    return r.command;
+  }
+
+  async createMaintenanceTask(_user: Profile, t: { sensor_id: string; title: string; notes: string; assigned_to: string | null }) {
+    await this.op({ action: 'maintenance_create', ...t });
+  }
+
+  async closeMaintenanceTask(_user: Profile, id: string, calibrated: boolean) {
+    await this.op({ action: 'maintenance_close', id, calibrated });
+  }
+
+  async updateWaterBody(_user: Profile, patch: { geofence?: Polygon; home_point?: LatLon; boundary?: Polygon }) {
+    await this.op({ action: 'water_body', patch });
+  }
+
+  async updateZonePolygon(_user: Profile, zoneId: string, polygon: Polygon) {
+    await this.op({ action: 'zone_polygon', zone_id: zoneId, polygon });
+  }
+
+  async listAlerts(from: string, to: string) {
+    const { data, error } = await this.client.from('alerts').select('*').gte('created_at', from).lte('created_at', to).order('created_at').limit(2000);
+    if (error) throw error;
+    return (data ?? []) as Alert[];
+  }
+
+  async listAudit(limit = 100) {
+    const { data, error } = await this.client.from('audit_log').select('*').order('ts', { ascending: false }).limit(limit);
+    if (error) throw error;
+    return (data ?? []) as AuditEntry[];
+  }
+
+  private async audit(user: Profile, action: string, entity: string, entity_id: string, details: Record<string, unknown>) {
+    await this.client.from('audit_log').insert({ user_id: user.id, action, entity, entity_id, details });
+  }
+}
