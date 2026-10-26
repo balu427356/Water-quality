@@ -1,0 +1,17 @@
+-- Run the simulator every minute (each run writes telemetry every 3 s for ~57 s).
+-- Needs the pg_cron and pg_net extensions (Database → Extensions in the Supabase dashboard).
+-- Replace <project-ref> and <SIM_CRON_SECRET>; set the same secret with
+--   supabase secrets set SIM_CRON_SECRET=<SIM_CRON_SECRET>
+select cron.schedule(
+  'aquaq-simulator',
+  '* * * * *',
+  $$
+  select net.http_post(
+    url := 'https://<project-ref>.supabase.co/functions/v1/simulator',
+    headers := jsonb_build_object('Content-Type', 'application/json', 'x-sim-secret', '<SIM_CRON_SECRET>'),
+    body := '{"action":"tick"}'::jsonb,
+    timeout_milliseconds := 70000
+  );
+  $$
+);
+-- To stop it: select cron.unschedule('aquaq-simulator');
