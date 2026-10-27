@@ -3,7 +3,7 @@ notebook executes end to end. Same columns, five countries, station series with 
 country-median imputation, reporting-limit constants, an aggregate identifier (China), out-of-range
 rows, duplicates and the published label (DO/pH as maxima, denominator 12). The values are random;
 no result computed on this file says anything about water quality."""
-import sys
+import os, sys
 import numpy as np, pandas as pd
 
 rng = np.random.default_rng(0)
@@ -71,5 +71,6 @@ nse = exc / 12
 score = 100 - np.sqrt(2 * (100 * nf / 12) ** 2 + (nse / (.01 * nse + .01)) ** 2) / 1.732
 df["CCME_Values"] = score; df["CCME_WQI"] = [CLASSES[k] for k in np.digitize(score, [45, 65, 80, 95])]
 out = sys.argv[1] if len(sys.argv) > 1 else "Combined_dataset.csv"
+os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
 df.to_csv(out, index=False)
 print(out, df.shape, df.Country.value_counts().to_dict(), df.CCME_WQI.value_counts().to_dict())

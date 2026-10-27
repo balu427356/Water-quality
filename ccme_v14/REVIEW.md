@@ -82,6 +82,10 @@ reviewer would find four problems that change results or claims:
 * §15e: training-label tiers re-evaluated. §16b: changes vs v13. Table 60: automated claim check (supported only if the CI excludes
   zero in the claimed direction and the Holm-adjusted p < 0.05).
 * All outputs cleared; the change log is at the top of the notebook.
+* Portability (also broken in v13): a checkpoint name contained ":" and text files with ≤, ₄ were written in the system encoding,
+  so the run failed on Windows; names are now sanitised and text files are written as UTF-8.
+* How to run: `RUN.md`, `requirements.txt` (tested versions) and `tools/run_notebook.py` (runs without a browser, prints progress,
+  saves the executed notebook even after an error, resumes from checkpoints).
 
 ## 6. Smoke test
 
@@ -104,7 +108,7 @@ The values are random, so **no number from this run means anything**; it only sh
 
 ## 7. Next steps
 
-1. Run v14 end-to-end on `Combined_dataset.csv` (expect several hours; the checkpoints let it resume).
+1. Run v14 end-to-end on `Combined_dataset.csv` as described in `RUN.md` (expect several hours; the checkpoints let it resume).
 2. Write the results and discussion from Table 60 and Tables 14, 21, 29–35; report Table 58 (changes vs v13) in the cover letter.
 3. Decide the points in §3 (nitrate objective, reporting limits, weighting, framing) before submission.
 4. Verify the García-Ceja & González-Mendoza reference and the review quotation.

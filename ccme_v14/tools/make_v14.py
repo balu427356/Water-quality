@@ -40,6 +40,7 @@ rep(0, "### New in v13 (methodological audit for journal submission)", """### Ne
 | 8 | **Nitrate units.** Table 9 shows nitrate is reported as N in England and Ireland, but the label applies 45 mg/L, the drinking-water value *as NO₃* (= 10 mg/L as N) | The same guideline expressed as N (10 mg/L) is added to the sensitivity analysis; the inconsistency is stated as a limitation | §1, §15b, §18 |
 | 9 | **Notes for the manuscript contained hard-coded v13 numbers** that would not match a re-run | Notes rewritten without numbers; every number comes from the tables of the run | §18 |
 | 10 | Reproducibility table compared with v12 although v14 changes the method | Becomes "changes relative to v13" | §16b |
+| 11 | The run failed on Windows: a checkpoint name contained ":" ("NH₃: CCME guideline…"), and text files with ≤, ₄ were written in the system encoding | File names are sanitised; text files are written as UTF-8 | §1, §15, §17 |
 
 > **Execution status.** v14 has a new pipeline ID, so no v13 checkpoint can be reused, and all outputs are cleared: run the notebook
 > end-to-end on `Combined_dataset.csv` before using any number. The code was executed end-to-end on a synthetic file with the same
@@ -77,6 +78,12 @@ rep(3, '                   "Nitrate ≤ 13 mg/L (CCME long-term)": ("NO3", (None
     '                   "Nitrate ≤ 13 mg/L (CCME long-term)": ("NO3", (None, 13.0)),\n'
     '                   "Nitrate ≤ 10 mg/L (Health Canada drinking-water MAC, expressed as N)": ("NO3", (None, 10.0)),\n')
 rep(3, 'FIG_DIR, TAB_DIR = "figures_v13", "tables_v13"', 'FIG_DIR, TAB_DIR = "figures_v14", "tables_v14"')
+# text files contain ≤, ₄, − ...: write them as UTF-8 (the Windows default encoding cannot hold these characters)
+rep(3, 'try: open(f"{TAB_DIR}/{name}.tex", "w").write(', 'try: open(f"{TAB_DIR}/{name}.tex", "w", encoding="utf-8").write(')
+rep(97, '_ = open(f"{TAB_DIR}/results_summary.md", "w").write(', '_ = open(f"{TAB_DIR}/results_summary.md", "w", encoding="utf-8").write(')
+# checkpoint names are built from variant names; "NH₃: CCME guideline" contains ":", which Windows does not allow in file names
+rep(86, '        name = f"rob_{analysis}_{variant}_{c}".replace(" ", "_").replace("/", "_")',
+    r'''        name = "".join("_" if ch in ' <>:"/\\|?*' else ch for ch in f"rob_{analysis}_{variant}_{c}")   # valid file name on every OS''')
 
 # ============================================================ cell 4: presentation helpers
 rep(4, "'repro', 'summary']", "'repro', 'summary', 'claims']")

@@ -1,0 +1,16 @@
+# Versions with which WaterQuality_CCME_v14.ipynb was executed end to end (Python 3.13).
+# For a CPU-only PyTorch (≈ 200 MB instead of ≈ 3 GB of CUDA libraries) install it first:
+#   pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+numpy==2.5.3
+pandas==3.0.5
+scipy==1.18.1
+scikit-learn==1.9.1
+xgboost==3.4.1
+shap==0.54.1
+lime==0.2.0.1
+matplotlib==3.11.2
+seaborn==0.13.2
+torch==2.14.1
+ipykernel==7.4.0
+nbformat==5.11.1
+nbclient==0.11.0

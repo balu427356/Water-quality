@@ -1,0 +1,7 @@
+# data and run state (large or machine-specific); results in tables_v14/ and figures_v14/ stay committable
+Combined_dataset.csv
+checkpoints/
+smoke/
+.venv/
+__pycache__/
+run.log
